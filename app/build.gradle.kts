@@ -4,10 +4,25 @@ plugins {
     alias(libs.plugins.ksp)
 }
 
+fun gitBranchName(): String {
+    return try {
+        providers.exec {
+            commandLine("git", "-C", rootDir.absolutePath, "rev-parse", "--abbrev-ref", "HEAD")
+        }.standardOutput.asText.get().trim().ifEmpty { "unknown" }
+    } catch (_: Exception) {
+        "unknown"
+    }
+}
+
 android {
     namespace = "com.example.carro"
     compileSdk {
         version = release(37)
+    }
+
+    buildFeatures {
+        compose = true
+        buildConfig = true
     }
 
     defaultConfig {
@@ -16,6 +31,9 @@ android {
         targetSdk = 37
         versionCode = 1
         versionName = "1.0"
+        buildConfigField("String", "PROJECT_DIR_NAME", "\"${rootDir.name}\"")
+        buildConfigField("String", "APP_GIT_BRANCH", "\"${gitBranchName()}\"")
+        buildConfigField("String", "APP_PRESENTATION_TAG", "\"VERSIÓN PRESENTACIÓN\"")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -30,9 +48,6 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
-    }
-    buildFeatures {
-        compose = true
     }
 }
 

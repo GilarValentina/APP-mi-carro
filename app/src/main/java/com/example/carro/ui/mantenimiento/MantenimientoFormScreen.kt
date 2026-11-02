@@ -16,7 +16,11 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -49,6 +53,23 @@ import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
+private val MANTENIMIENTOS_COMUNES = listOf(
+    "Cambio de aceite",
+    "Cambio de filtro de aceite",
+    "Cambio de filtro de aire",
+    "Cambio de filtro de combustible",
+    "Revisión de frenos",
+    "Balanceo",
+    "Alineación",
+    "Cambio de llantas",
+    "Cambio de batería",
+    "Cambio de bujías",
+    "Revisión técnico-mecánica",
+    "SOAT",
+    "Lavado",
+    "Otro"
+)
+
 /** Formulario de registro/edición de mantenimiento con repuestos (RF-17 a RF-27). */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -67,6 +88,7 @@ fun MantenimientoFormScreen(
     var descripcion by remember { mutableStateOf("") }
     var taller by remember { mutableStateOf("") }
     var manoObra by remember { mutableStateOf("") }
+    var mantenimientoExpandido by remember { mutableStateOf(false) }
     val repuestos = remember { mutableStateListOf<Repuesto>() }
 
     var errores by remember { mutableStateOf<List<String>>(emptyList()) }
@@ -88,6 +110,8 @@ fun MantenimientoFormScreen(
             }
         }
     }
+
+    val opcionDescripcion = if (descripcion in MANTENIMIENTOS_COMUNES) descripcion else "Otro"
 
     val formatter = remember { DateTimeFormatter.ISO_LOCAL_DATE }
     fun parseFecha(t: String): LocalDate? = runCatching { LocalDate.parse(t, formatter) }.getOrNull()
@@ -151,10 +175,46 @@ fun MantenimientoFormScreen(
                     )
                 }
             }
-            OutlinedTextField(
-                value = descripcion, onValueChange = { descripcion = it },
-                label = { Text("Descripción *") }, modifier = Modifier.fillMaxWidth()
-            )
+            Text("Tipo de mantenimiento", style = MaterialTheme.typography.labelLarge)
+            ExposedDropdownMenuBox(
+                expanded = mantenimientoExpandido,
+                onExpandedChange = { mantenimientoExpandido = it }
+            ) {
+                OutlinedTextField(
+                    value = opcionDescripcion,
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text("Seleccionar mantenimiento") },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = mantenimientoExpandido) },
+                    modifier = Modifier.menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable).fillMaxWidth()
+                )
+                ExposedDropdownMenu(
+                    expanded = mantenimientoExpandido,
+                    onDismissRequest = { mantenimientoExpandido = false }
+                ) {
+                    MANTENIMIENTOS_COMUNES.forEach { opcion ->
+                        DropdownMenuItem(
+                            text = { Text(opcion) },
+                            onClick = {
+                                if (opcion == "Otro") {
+                                    descripcion = ""
+                                } else {
+                                    descripcion = opcion
+                                }
+                                mantenimientoExpandido = false
+                            }
+                        )
+                    }
+                }
+            }
+            if (opcionDescripcion == "Otro") {
+                OutlinedTextField(
+                    value = descripcion,
+                    onValueChange = { descripcion = it },
+                    label = { Text("Descripción personalizada *") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
             OutlinedTextField(
                 value = fecha, onValueChange = { fecha = it },
                 label = { Text("Fecha (AAAA-MM-DD) *") }, singleLine = true,

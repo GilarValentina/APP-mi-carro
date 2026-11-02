@@ -27,7 +27,9 @@ data class FormularioVehiculo(
     val color: String = "",
     val combustible: String? = null,
     val cilindraje: String = "",
-    val vin: String = ""
+    val vin: String = "",
+    val ciudadPicoPlaca: String = "",
+    val picoYPlaca: String = ""
 )
 
 /** Estado de UI del formulario de registro/edición (RF-01, RF-02, RF-05). */
@@ -71,7 +73,9 @@ class VehiculoFormViewModel(
                                 color = veh.color.orEmpty(),
                                 combustible = veh.combustible,
                                 cilindraje = veh.cilindraje.orEmpty(),
-                                vin = veh.vin.orEmpty()
+                                vin = veh.vin.orEmpty(),
+                                ciudadPicoPlaca = veh.ciudadPicoPlaca.orEmpty(),
+                                picoYPlaca = veh.picoYPlaca.orEmpty()
                             )
                         } ?: it.formulario
                     )
@@ -106,7 +110,9 @@ class VehiculoFormViewModel(
             color = f.color,
             vin = f.vin,
             combustible = f.combustible,
-            cilindraje = f.cilindraje
+            cilindraje = f.cilindraje,
+            ciudadPicoPlaca = f.ciudadPicoPlaca.ifBlank { null },
+            picoYPlaca = f.picoYPlaca.ifBlank { null }
         )
         estado.update { it.copy(guardando = true) }
         viewModelScope.launch {

@@ -17,15 +17,16 @@ data class ResultadoValidacionVehiculo(
 object VehiculoValidator {
 
     const val ANIO_MINIMO = 1950
-    private val PLACA = Regex("^[A-Z0-9]{5,7}$")
+    private val PLACA_AUTOMOVIL = Regex("^[A-Z]{3}[0-9]{3}$")
+    private val PLACA_MOTO = Regex("^[A-Z]{3}[0-9]{2}[A-Z]$")
     private val VIN = Regex("^[A-HJ-NPR-Z0-9]{17}$")
 
     /**
      * Normaliza la placa para compararla y guardarla siempre igual:
-     * mayúsculas, sin espacios ni guiones ("abc-123" → "ABC123").
+     * mayúsculas, sin espacios ni guiones.
      */
     fun normalizarPlaca(placa: String): String =
-        placa.uppercase().filter { it.isLetterOrDigit() }
+        placa.uppercase().replace("-", "").filter { it.isLetterOrDigit() }
 
     /**
      * @param placaDuplicada si ya existe otro vehículo con la misma placa normalizada (RF-05).
@@ -38,10 +39,21 @@ object VehiculoValidator {
     ): ResultadoValidacionVehiculo {
         val errores = mutableMapOf<CampoVehiculo, String>()
         val placa = normalizarPlaca(vehiculo.placa)
+        val patronPlaca = when (vehiculo.tipo) {
+            com.example.carro.domain.model.TipoVehiculo.MOTOCICLETA -> PLACA_MOTO
+            else -> PLACA_AUTOMOVIL
+        }
 
         when {
             placa.isEmpty() -> errores[CampoVehiculo.PLACA] = "La placa es obligatoria."
-            !PLACA.matches(placa) -> errores[CampoVehiculo.PLACA] = "La placa debe tener entre 5 y 7 letras o números."
+            !patronPlaca.matches(placa) -> {
+                val esperado = if (vehiculo.tipo == com.example.carro.domain.model.TipoVehiculo.MOTOCICLETA) {
+                    "ABC12D"
+                } else {
+                    "ABC123"
+                }
+                errores[CampoVehiculo.PLACA] = "La placa no coincide con el formato requerido para ${vehiculo.tipo.etiqueta.lowercase()}. Ejemplo: $esperado."
+            }
             placaDuplicada -> errores[CampoVehiculo.PLACA] = "Ya existe un vehículo con la placa $placa."
         }
         if (vehiculo.marca.isBlank()) errores[CampoVehiculo.MARCA] = "La marca es obligatoria."

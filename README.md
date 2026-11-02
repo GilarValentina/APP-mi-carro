@@ -74,6 +74,34 @@ UI (Compose) ──> ViewModel ──> Repository ──> Room DAO
 
 ---
 
-## Licencia y Contexto Académico
+## Seguridad de proyecto y validación antes de ejecutar
 
+Para evitar que Android Studio compile una copia antigua del proyecto, siempre debe mantenerse una sola carpeta activa y conocida:
+
+- Ruta correcta: `C:\Users\ASUS\AndroidStudioProjects\Proyecto_MiCarro`
+- Ruta vieja / duplicada que debe descartarse: `C:\Proyecto_MiCarro-main`
+
+### Verificación de ruta antes de ejecutar
+1. Abrir Android Studio.
+2. Confirmar que la ventana del proyecto muestra la ruta `C:\Users\ASUS\AndroidStudioProjects\Proyecto_MiCarro`.
+3. En la barra de estado o en el proyecto abierto, verificar que el directorio raiz coincide con esa carpeta.
+4. Ejecutar el script PowerShell: `powershell -ExecutionPolicy Bypass -File .\verify-project.ps1`
+5. Si la verificación falla, no compilar ni instalar APK; primero reabre el proyecto correcto.
+
+### Checklist de validación para presentación
+- [ ] Ruta del proyecto correcta.
+- [ ] Rama Git correcta (`git status` y `git branch --show-current`).
+- [ ] Sincronización Gradle exitosa (`Sync Project with Gradle Files`).
+- [ ] Build exitoso con `./gradlew assembleDebug`.
+- [ ] APK instalado corresponde a la última versión y no a la copia vieja.
+- [ ] La app muestra el identificador visible de presentación.
+
+### Recomendación permanente
+- Eliminar la carpeta vieja del entorno cuando ya no sea necesaria.
+- No abrir la carpeta `C:\Proyecto_MiCarro-main` en Android Studio.
+- Eliminar cualquier proyecto reciente que apunte a la ruta antigua desde `File > Open Recent` or `File > Manage IDE Settings > Restore Default Settings` (si fuera necesario).
+- Mantener solo una copia del repositorio en el sistema.
+
+## Licencia y Contexto Académico
+ 
 Proyecto Integrador desarrollado para el **Curso de Aplicaciones Móviles**.

@@ -140,6 +140,8 @@ private fun VehiculoEntity.toDomain(): Vehiculo = Vehiculo(
     vin = vin,
     combustible = combustible,
     cilindraje = cilindraje,
+    ciudadPicoPlaca = ciudadPicoPlaca,
+    picoYPlaca = picoYPlaca,
     esPrincipal = esPrincipal
 )
 
@@ -157,5 +159,7 @@ private fun Vehiculo.toEntity(): VehiculoEntity = VehiculoEntity(
     vin = vin,
     combustible = combustible?.trim()?.ifBlank { null },
     cilindraje = cilindraje?.trim()?.ifBlank { null },
+    ciudadPicoPlaca = ciudadPicoPlaca?.trim()?.ifBlank { null },
+    picoYPlaca = picoYPlaca?.trim()?.ifBlank { null },
     esPrincipal = esPrincipal
 )

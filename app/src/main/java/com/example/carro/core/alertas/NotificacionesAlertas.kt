@@ -66,4 +66,41 @@ object NotificacionesAlertas {
             manager.notify(item.documento.id.toInt(), notificacion)
         }
     }
+
+    fun notificarMantenimiento(
+        context: Context,
+        titulo: String,
+        mensaje: String,
+        id: Int = 9001
+    ) {
+        if (!tienePermiso(context)) return
+        crearCanal(context)
+        val notificacion = NotificationCompat.Builder(context, CANAL_ID)
+            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setContentTitle(titulo)
+            .setContentText(mensaje)
+            .setAutoCancel(true)
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .build()
+        NotificationManagerCompat.from(context).notify(id, notificacion)
+    }
+
+    fun notificarRecordatorios(
+        context: Context,
+        recordatorios: List<Pair<String, String>>
+    ) {
+        if (recordatorios.isEmpty() || !tienePermiso(context)) return
+        crearCanal(context)
+        val manager = NotificationManagerCompat.from(context)
+        recordatorios.forEachIndexed { index, (titulo, texto) ->
+            val notificacion = NotificationCompat.Builder(context, CANAL_ID)
+                .setSmallIcon(R.drawable.ic_launcher_foreground)
+                .setContentTitle(titulo)
+                .setContentText(texto)
+                .setAutoCancel(true)
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .build()
+            manager.notify(9000 + index, notificacion)
+        }
+    }
 }

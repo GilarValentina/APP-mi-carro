@@ -47,7 +47,8 @@ class VehiculoValidatorTest {
 
     @Test
     fun `placa de moto con letra final es valida`() {
-        assertTrue(validar(base(placa = "xyz12d")).esValido)
+        assertTrue(validar(base(placa = "xyz12d").copy(tipo = TipoVehiculo.MOTOCICLETA)).esValido)
+        assertTrue(CampoVehiculo.PLACA in validar(base(placa = "xyz12d")).errores)
     }
 
     @Test

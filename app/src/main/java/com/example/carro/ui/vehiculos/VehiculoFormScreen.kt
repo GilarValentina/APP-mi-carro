@@ -17,7 +17,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -29,6 +33,9 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardCapitalization
@@ -37,8 +44,10 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.carro.domain.model.TipoVehiculo
 import com.example.carro.domain.vehiculo.CampoVehiculo
+import com.example.carro.domain.vehiculo.VehiculoCatalog
 
 private val COMBUSTIBLES = listOf("Gasolina", "Diésel", "Gas", "Híbrido", "Eléctrico")
+private val CIUDADES_PICO_PLACA = listOf("Bogotá", "Medellín", "Cali", "Barranquilla", "Cartagena", "Pereira")
 
 /** Formulario de registro y edición de vehículos (RF-01, RF-02, RF-05). */
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
@@ -51,6 +60,11 @@ fun VehiculoFormScreen(
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val f = state.formulario
     val errores = state.errores
+    val marcas = VehiculoCatalog.marcas
+    val lineas = VehiculoCatalog.lineasDeMarca(f.marca)
+    var marcaExpandida by remember { mutableStateOf(false) }
+    var lineaExpandida by remember { mutableStateOf(false) }
+    var ciudadExpandida by remember { mutableStateOf(false) }
 
     LaunchedEffect(state.guardado) {
         if (state.guardado) onGuardado()
@@ -97,23 +111,81 @@ fun VehiculoFormScreen(
                 etiqueta = "Placa *",
                 error = errores[CampoVehiculo.PLACA],
                 capitalizacion = KeyboardCapitalization.Characters,
-                // Sin transformar el texto aquí: cambiarlo mientras el teclado compone pierde caracteres.
-                // La placa se normaliza (mayúsculas, sin espacios ni guiones) al guardar.
-                onCambio = { v -> viewModel.actualizar(CampoVehiculo.PLACA) { it.copy(placa = v) } }
+                onCambio = { v ->
+                    val normalizada = v.filter { it.isLetterOrDigit() }.uppercase()
+                    viewModel.actualizar(CampoVehiculo.PLACA) { it.copy(placa = normalizada) }
+                }
             )
-            CampoTexto(
-                valor = f.marca,
-                etiqueta = "Marca *",
-                error = errores[CampoVehiculo.MARCA],
-                onCambio = { v -> viewModel.actualizar(CampoVehiculo.MARCA) { it.copy(marca = v) } }
-            )
-            CampoTexto(
-                valor = f.linea,
-                etiqueta = "Línea *",
-                ayuda = "Nombre comercial, p. ej. Spark GT",
-                error = errores[CampoVehiculo.LINEA],
-                onCambio = { v -> viewModel.actualizar(CampoVehiculo.LINEA) { it.copy(linea = v) } }
-            )
+
+            Text("Marca *", style = MaterialTheme.typography.labelLarge)
+            ExposedDropdownMenuBox(
+                expanded = marcaExpandida,
+                onExpandedChange = { marcaExpandida = it }
+            ) {
+                OutlinedTextField(
+                    value = f.marca,
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text("Marca") },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = marcaExpandida) },
+                    modifier = Modifier.menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable).fillMaxWidth(),
+                    isError = errores[CampoVehiculo.MARCA] != null
+                )
+                ExposedDropdownMenu(
+                    expanded = marcaExpandida,
+                    onDismissRequest = { marcaExpandida = false }
+                ) {
+                    marcas.forEach { marca ->
+                        DropdownMenuItem(
+                            text = { Text(marca) },
+                            onClick = {
+                                viewModel.actualizar(CampoVehiculo.MARCA) {
+                                    it.copy(marca = marca, linea = "")
+                                }
+                                marcaExpandida = false
+                            }
+                        )
+                    }
+                }
+            }
+            if (errores[CampoVehiculo.MARCA] != null) {
+                Text(errores[CampoVehiculo.MARCA]!!, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+            }
+
+            Text("Línea *", style = MaterialTheme.typography.labelLarge)
+            ExposedDropdownMenuBox(
+                expanded = lineaExpandida,
+                onExpandedChange = { if (f.marca.isNotBlank()) lineaExpandida = it }
+            ) {
+                OutlinedTextField(
+                    value = f.linea,
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text("Línea") },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = lineaExpandida) },
+                    modifier = Modifier.menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable).fillMaxWidth(),
+                    enabled = f.marca.isNotBlank(),
+                    isError = errores[CampoVehiculo.LINEA] != null,
+                    supportingText = if (f.marca.isBlank()) { { Text("Seleccione primero la marca") } } else null
+                )
+                ExposedDropdownMenu(
+                    expanded = lineaExpandida && f.marca.isNotBlank(),
+                    onDismissRequest = { lineaExpandida = false }
+                ) {
+                    lineas.forEach { linea ->
+                        DropdownMenuItem(
+                            text = { Text(linea) },
+                            onClick = {
+                                viewModel.actualizar(CampoVehiculo.LINEA) { it.copy(linea = linea) }
+                                lineaExpandida = false
+                            }
+                        )
+                    }
+                }
+            }
+            if (errores[CampoVehiculo.LINEA] != null) {
+                Text(errores[CampoVehiculo.LINEA]!!, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+            }
             CampoTexto(
                 valor = f.anio,
                 etiqueta = "Modelo (año) *",
@@ -134,6 +206,48 @@ fun VehiculoFormScreen(
                     viewModel.actualizar(CampoVehiculo.KILOMETRAJE) { it.copy(kilometraje = v.filter(Char::isDigit).take(7)) }
                 }
             )
+
+            Text("Pico y placa", style = MaterialTheme.typography.labelLarge)
+            ExposedDropdownMenuBox(
+                expanded = ciudadExpandida,
+                onExpandedChange = { ciudadExpandida = it }
+            ) {
+                OutlinedTextField(
+                    value = f.ciudadPicoPlaca,
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text("Ciudad") },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = ciudadExpandida) },
+                    modifier = Modifier.menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable).fillMaxWidth()
+                )
+                ExposedDropdownMenu(
+                    expanded = ciudadExpandida,
+                    onDismissRequest = { ciudadExpandida = false }
+                ) {
+                    CIUDADES_PICO_PLACA.forEach { ciudad ->
+                        DropdownMenuItem(
+                            text = { Text(ciudad) },
+                            onClick = {
+                                val descripcion = VehiculoCatalog.descripcionPicoPlaca(ciudad, f.tipo)
+                                viewModel.actualizar {
+                                    it.copy(
+                                        ciudadPicoPlaca = ciudad,
+                                        picoYPlaca = descripcion
+                                    )
+                                }
+                                ciudadExpandida = false
+                            }
+                        )
+                    }
+                }
+            }
+            if (f.picoYPlaca.isNotBlank()) {
+                Text(
+                    text = f.picoYPlaca,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
 
             Text("Datos opcionales", style = MaterialTheme.typography.labelLarge)
             CampoTexto(

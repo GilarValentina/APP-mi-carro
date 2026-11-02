@@ -26,6 +26,8 @@ data class VehiculoEntity(
     val combustible: String? = null,
     val cilindraje: String? = null,
     val fotoUri: String? = null,
+    val ciudadPicoPlaca: String? = null,
+    val picoYPlaca: String? = null,
     val esPrincipal: Boolean = false,
     val archivado: Boolean = false,
     val creadoEn: Long = System.currentTimeMillis()

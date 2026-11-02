@@ -5,6 +5,8 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
 import com.example.carro.data.dao.ActividadDao
 import com.example.carro.data.dao.AlertaDao
 import com.example.carro.data.dao.CategoriaDao
@@ -37,7 +39,7 @@ import com.example.carro.data.entity.VehiculoEntity
         DocumentoEntity::class,
         AlertaEntity::class
     ],
-    version = 1,
+    version = 2,
     exportSchema = true
 )
 @TypeConverters(Converters::class)
@@ -53,6 +55,14 @@ abstract class MiCarroDatabase : RoomDatabase() {
     abstract fun alertaDao(): AlertaDao
 
     companion object {
+        /** Añade los datos de pico y placa conservando los vehículos ya registrados. */
+        val MIGRATION_1_2 = object : Migration(1, 2) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE vehiculos ADD COLUMN ciudadPicoPlaca TEXT")
+                db.execSQL("ALTER TABLE vehiculos ADD COLUMN picoYPlaca TEXT")
+            }
+        }
+
         @Volatile
         private var INSTANCE: MiCarroDatabase? = null
 
@@ -63,6 +73,7 @@ abstract class MiCarroDatabase : RoomDatabase() {
                     MiCarroDatabase::class.java,
                     "micarro.db"
                 )
+                    .addMigrations(MIGRATION_1_2)
                     .fallbackToDestructiveMigration(dropAllTables = true)
                     .build()
                     .also { INSTANCE = it }
