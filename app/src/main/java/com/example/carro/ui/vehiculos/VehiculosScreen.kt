@@ -40,6 +40,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.carro.domain.vehiculo.Vehiculo
@@ -91,9 +92,14 @@ fun VehiculosScreen(
             ) { CircularProgressIndicator() }
 
             state.vehiculos.isEmpty() -> Box(
-                modifier = Modifier.fillMaxSize().padding(padding).padding(24.dp),
+                modifier = Modifier.fillMaxSize().padding(padding).padding(32.dp),
                 contentAlignment = Alignment.Center
-            ) { Text("Aún no tienes vehículos. Registra el primero con el botón +.") }
+            ) {
+                Text(
+                    text = "Aún no tienes vehículos. Registra el primero con el botón +.",
+                    textAlign = TextAlign.Center
+                )
+            }
 
             else -> LazyColumn(
                 modifier = Modifier.fillMaxSize().padding(padding).padding(16.dp),

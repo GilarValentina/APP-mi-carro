@@ -55,6 +55,9 @@ abstract class MiCarroDatabase : RoomDatabase() {
     abstract fun alertaDao(): AlertaDao
 
     companion object {
+        /** Nombre del archivo local de la base de datos (usado por el respaldo, RF-39). */
+        const val NOMBRE_ARCHIVO = "micarro.db"
+
         /** Añade los datos de pico y placa conservando los vehículos ya registrados. */
         val MIGRATION_1_2 = object : Migration(1, 2) {
             override fun migrate(db: SupportSQLiteDatabase) {
@@ -71,7 +74,7 @@ abstract class MiCarroDatabase : RoomDatabase() {
                 INSTANCE ?: Room.databaseBuilder(
                     context.applicationContext,
                     MiCarroDatabase::class.java,
-                    "micarro.db"
+                    NOMBRE_ARCHIVO
                 )
                     .addMigrations(MIGRATION_1_2)
                     .fallbackToDestructiveMigration(dropAllTables = true)

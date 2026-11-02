@@ -11,9 +11,12 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.carro.MiCarroApplication
 import com.example.carro.ui.alertas.AlertasRoute
+import com.example.carro.ui.historial.HistorialRoute
 import com.example.carro.ui.home.HomeScreen
 import com.example.carro.ui.mantenimiento.MantenimientoRoute
 import com.example.carro.ui.plan.PlanMantenimientoRoute
+import com.example.carro.ui.respaldo.RespaldoScreen
+import com.example.carro.ui.respaldo.RespaldoViewModel
 import com.example.carro.ui.vehiculos.VehiculoFormScreen
 import com.example.carro.ui.vehiculos.VehiculoFormViewModel
 import com.example.carro.ui.vehiculos.VehiculosScreen
@@ -35,7 +38,10 @@ fun MiCarroNavHost(
         startDestination = Destinos.INICIO
     ) {
         composable(Destinos.INICIO) {
-            HomeScreen(onNavegar = { ruta -> navController.navigate(ruta) })
+            HomeScreen(
+                container = container,
+                onNavegar = { ruta -> navController.navigate(ruta) }
+            )
         }
         composable(Destinos.VEHICULOS) {
             VehiculosScreen(
@@ -80,6 +86,19 @@ fun MiCarroNavHost(
             AlertasRoute(
                 container = container,
                 onRegistrarVehiculo = registrarVehiculo,
+                onVolver = { navController.popBackStack() }
+            )
+        }
+        composable(Destinos.HISTORIAL) {
+            HistorialRoute(
+                container = container,
+                onRegistrarVehiculo = registrarVehiculo,
+                onVolver = { navController.popBackStack() }
+            )
+        }
+        composable(Destinos.RESPALDO) {
+            RespaldoScreen(
+                viewModel = viewModel(factory = RespaldoViewModel.factory(container)),
                 onVolver = { navController.popBackStack() }
             )
         }

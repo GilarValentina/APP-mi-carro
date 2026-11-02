@@ -3,8 +3,10 @@ package com.example.carro.core.di
 import android.content.Context
 import com.example.carro.core.database.MiCarroDatabase
 import com.example.carro.data.repository.AlertasRepository
+import com.example.carro.data.repository.HistorialRepository
 import com.example.carro.data.repository.MantenimientoRepository
 import com.example.carro.data.repository.PlanMantenimientoRepository
+import com.example.carro.data.repository.RespaldoRepository
 import com.example.carro.data.repository.VehiculoRepository
 
 /**
@@ -40,5 +42,11 @@ class AppContainer(context: Context) {
     }
     val alertasRepository: AlertasRepository by lazy {
         AlertasRepository(appContext, documentoDao, alertaDao)
+    }
+    val historialRepository by lazy {
+        HistorialRepository(mantenimientoDao, repuestoDao, actividadDao, categoriaDao)
+    }
+    val respaldoRepository by lazy {
+        RespaldoRepository(appContext, database)
     }
 }

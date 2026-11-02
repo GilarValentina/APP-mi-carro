@@ -35,6 +35,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.carro.domain.model.EstadoActividad
@@ -75,9 +76,14 @@ fun PlanMantenimientoScreen(
             ) { CircularProgressIndicator() }
 
             state.actividades.isEmpty() -> Box(
-                modifier = Modifier.fillMaxSize().padding(padding),
+                modifier = Modifier.fillMaxSize().padding(padding).padding(32.dp),
                 contentAlignment = Alignment.Center
-            ) { Text("Aún no hay actividades. Agrega la primera con el botón +.") }
+            ) {
+                Text(
+                    text = "Aún no hay actividades. Agrega la primera con el botón +.",
+                    textAlign = TextAlign.Center
+                )
+            }
 
             else -> LazyColumn(
                 modifier = Modifier.fillMaxSize().padding(padding).padding(16.dp),

@@ -21,6 +21,14 @@ interface RepuestoDao {
     @Query("SELECT COUNT(*) FROM repuestos WHERE mantenimientoId = :mantenimientoId")
     suspend fun contarPorMantenimiento(mantenimientoId: Long): Int
 
+    /** RF-34 y RF-36: repuestos de todos los mantenimientos de un vehículo. */
+    @Query(
+        "SELECT r.* FROM repuestos r " +
+            "INNER JOIN mantenimientos m ON m.id = r.mantenimientoId " +
+            "WHERE m.vehiculoId = :vehiculoId ORDER BY r.id ASC"
+    )
+    fun observarPorVehiculo(vehiculoId: Long): Flow<List<RepuestoEntity>>
+
     @Query("DELETE FROM repuestos WHERE mantenimientoId = :mantenimientoId")
     suspend fun eliminarPorMantenimiento(mantenimientoId: Long)
 

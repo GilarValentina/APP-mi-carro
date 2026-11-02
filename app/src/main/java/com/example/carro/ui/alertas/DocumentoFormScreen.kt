@@ -26,12 +26,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.example.carro.domain.alerta.Documento
 import com.example.carro.domain.model.TipoDocumento
+import com.example.carro.ui.componentes.CampoFecha
 import java.time.LocalDate
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -115,12 +114,11 @@ fun DocumentoFormScreen(
                 modifier = Modifier.fillMaxWidth().padding(top = 12.dp)
             )
 
-            OutlinedTextField(
-                value = fecha,
-                onValueChange = { fecha = it },
-                label = { Text("Fecha de vencimiento (AAAA-MM-DD) *") },
-                singleLine = true,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            CampoFecha(
+                valor = fecha,
+                onValorCambiado = { fecha = it; error = null },
+                etiqueta = "Fecha de vencimiento *",
+                esError = error != null,
                 modifier = Modifier.fillMaxWidth().padding(top = 12.dp)
             )
 

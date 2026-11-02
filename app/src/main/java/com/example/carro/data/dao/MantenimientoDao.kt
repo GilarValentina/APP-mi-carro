@@ -18,6 +18,10 @@ interface MantenimientoDao {
     @Query("SELECT * FROM mantenimientos WHERE id = :id")
     fun observarPorId(id: Long): Flow<MantenimientoEntity?>
 
+    /** RF-37: últimos mantenimientos de todos los vehículos, para el inicio. */
+    @Query("SELECT * FROM mantenimientos ORDER BY fecha DESC, id DESC LIMIT :limite")
+    fun observarRecientes(limite: Int): Flow<List<MantenimientoEntity>>
+
     @Query("SELECT * FROM mantenimientos WHERE id = :id")
     suspend fun obtenerPorId(id: Long): MantenimientoEntity?
 

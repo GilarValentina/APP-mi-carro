@@ -2,39 +2,199 @@ package com.example.carro.domain.vehiculo
 
 object VehiculoCatalog {
     val marcas: List<String> = listOf(
-        "Toyota",
         "Chevrolet",
         "Renault",
         "Mazda",
-        "Honda",
-        "Ford",
-        "Volkswagen",
-        "Nissan",
+        "Toyota",
         "Kia",
+        "Nissan",
         "Hyundai",
+        "Suzuki",
+        "Volkswagen",
+        "Ford",
+        "Honda",
+        "Mitsubishi",
+        "Fiat",
+        "Jeep",
+        "Peugeot",
+        "Citroën",
+        "Subaru",
+        "Chery",
+        "JAC",
+        "BYD",
+        "Changan",
+        "Great Wall",
+        "Foton",
+        "SsangYong",
+        "Dodge",
+        "RAM",
+        "Volvo",
+        "Land Rover",
+        "Tesla",
         "BMW",
         "Mercedes-Benz",
         "Audi",
-        "Suzuki",
-        "Mitsubishi"
+        "Bajaj",
+        "Yamaha",
+        "AKT",
+        "Hero",
+        "KTM",
+        "Royal Enfield",
+        "Kawasaki",
+        "Triumph",
+        "CFMoto",
+        "Otra"
     )
 
     private val lineasPorMarca: Map<String, List<String>> = mapOf(
-        "Toyota" to listOf("Corolla", "Yaris", "Hilux", "RAV4", "Prius"),
-        "Chevrolet" to listOf("Spark", "Onix", "Tracker", "Camaro", "Equinox"),
-        "Renault" to listOf("Logan", "Sandero", "Duster", "Captur", "Kwid"),
-        "Mazda" to listOf("Mazda3", "CX-5", "BT-50", "Mazda2"),
-        "Honda" to listOf("Civic", "CR-V", "Fit", "Accord"),
-        "Ford" to listOf("Focus", "Escape", "Ranger", "Fiesta"),
-        "Volkswagen" to listOf("Jetta", "Gol", "T-Cross", "Taos", "Golf"),
-        "Nissan" to listOf("Sentra", "March", "X-Trail", "Frontier"),
-        "Kia" to listOf("Rio", "Sportage", "Cerato", "Sorento"),
-        "Hyundai" to listOf("Elantra", "Creta", "Accent", "Santa Fe"),
-        "BMW" to listOf("Serie 3", "X3", "X5", "Serie 1"),
-        "Mercedes-Benz" to listOf("Clase C", "GLA", "GLC", "Clase E"),
-        "Audi" to listOf("A3", "A4", "Q5", "Q3"),
-        "Suzuki" to listOf("Swift", "Vitara", "Jimny", "Baleno"),
-        "Mitsubishi" to listOf("Lancer", "Outlander", "Montero", "ASX")
+        "Chevrolet" to listOf(
+            "Spark", "Spark GT", "Spark Life", "Beat", "Onix", "Onix Turbo", "Sail", "Aveo",
+            "Joy", "Tracker", "Captiva", "Equinox", "Groove", "Blazer", "Traverse", "Montana",
+            "D-Max", "Colorado", "N300", "N400", "Camaro", "Corvette"
+        ),
+        "Renault" to listOf(
+            "Twingo", "Kwid", "Kwid E-Tech", "Logan", "Sandero", "Sandero Stepway", "Stepway",
+            "Symbol", "Clio", "Megane", "Fluence", "Duster", "Duster Oroch", "Captur", "Koleos",
+            "Kardian", "Alaskan", "Kangoo"
+        ),
+        "Mazda" to listOf(
+            "Mazda 2", "Mazda 2 Sport", "Mazda 3", "Mazda 3 Sedán", "Mazda 3 Sport", "Mazda 6",
+            "CX-3", "CX-30", "CX-5", "CX-50", "CX-60", "CX-90", "BT-50", "MX-5"
+        ),
+        "Toyota" to listOf(
+            "Yaris", "Yaris Cross", "Corolla", "Corolla Cross", "Raize", "RAV4", "C-HR",
+            "Hilux", "Fortuner", "SW4", "Prado", "Land Cruiser", "Hiace", "Prius", "4Runner"
+        ),
+        "Kia" to listOf(
+            "Picanto", "Rio", "K3", "Cerato", "Forte", "Soluto", "Stonic", "Seltos", "Sonet",
+            "Sportage", "Sorento", "Carens", "Carnival", "Niro", "EV5", "Frontier", "K2500"
+        ),
+        "Nissan" to listOf(
+            "March", "Versa", "Sentra", "Kicks", "Juke", "Qashqai", "X-Trail", "Murano",
+            "Pathfinder", "Frontier", "Navara", "NP300", "Patrol", "Urvan"
+        ),
+        "Hyundai" to listOf(
+            "Grand i10", "i20", "Accent", "Elantra", "Venue", "Creta", "Creta Grand", "Tucson",
+            "Santa Fe", "Palisade", "Kona", "Staria", "H1", "Porter"
+        ),
+        "Suzuki" to listOf(
+            "Alto", "Celerio", "Swift", "Baleno", "Ciaz", "Ignis", "S-Presso", "Fronx",
+            "Vitara", "Grand Vitara", "S-Cross", "Jimny", "XL7", "Ertiga"
+        ),
+        "Volkswagen" to listOf(
+            "Gol", "Polo", "Virtus", "Voyage", "Jetta", "Vento", "Golf", "Passat",
+            "T-Cross", "Nivus", "Taos", "Tiguan", "Teramont", "Amarok", "Saveiro"
+        ),
+        "Ford" to listOf(
+            "Fiesta", "Focus", "Escape", "Territory", "Bronco", "Bronco Sport", "Explorer",
+            "Edge", "Expedition", "Ranger", "Maverick", "F-150", "Transit", "Mustang"
+        ),
+        "Honda" to listOf(
+            "Fit", "City", "Civic", "Accord", "HR-V", "CR-V", "BR-V", "WR-V", "Pilot", "ZR-V"
+        ),
+        "Mitsubishi" to listOf(
+            "Mirage", "Lancer", "ASX", "Eclipse Cross", "Outlander", "Xpander", "Xforce",
+            "Montero", "Montero Sport", "L200", "Triton"
+        ),
+        "Fiat" to listOf(
+            "Mobi", "Argo", "Cronos", "Uno", "Palio", "Pulse", "Fastback", "Toro", "Strada", "Ducato"
+        ),
+        "Jeep" to listOf(
+            "Renegade", "Compass", "Commander", "Cherokee", "Grand Cherokee", "Wrangler", "Gladiator"
+        ),
+        "Peugeot" to listOf(
+            "208", "2008", "301", "308", "3008", "408", "5008", "Partner", "Expert", "Landtrek"
+        ),
+        "Citroën" to listOf(
+            "C3", "C3 Aircross", "C4 Cactus", "C4", "C5 Aircross", "Berlingo", "Jumpy", "Jumper"
+        ),
+        "Subaru" to listOf(
+            "Impreza", "XV", "Crosstrek", "Forester", "Outback", "Legacy", "WRX", "BRZ"
+        ),
+        "Chery" to listOf(
+            "QQ", "Arrizo 5", "Arrizo 6", "Tiggo 2", "Tiggo 3", "Tiggo 4", "Tiggo 5X",
+            "Tiggo 7 Pro", "Tiggo 8 Pro", "Omoda 5"
+        ),
+        "JAC" to listOf(
+            "S2", "S3", "S4", "S7", "T6", "T8", "E10X", "E-JS1", "Sunray", "X200"
+        ),
+        "BYD" to listOf(
+            "Dolphin", "Dolphin Mini", "Seagull", "Yuan Plus", "Yuan Pro", "Song Plus",
+            "Han", "Tang", "Seal", "Shark"
+        ),
+        "Changan" to listOf(
+            "Alsvin", "Eado", "CS15", "CS35 Plus", "CS55 Plus", "CS75 Plus", "Hunter", "Star Truck"
+        ),
+        "Great Wall" to listOf(
+            "Haval H6", "Haval Jolion", "Haval H2", "Poer", "Wingle 5", "Wingle 7", "Ora 03", "Tank 300"
+        ),
+        "Foton" to listOf(
+            "Tunland", "Sauvana", "Aumark", "Gratour", "Toano", "View", "Terracota"
+        ),
+        "SsangYong" to listOf(
+            "Tivoli", "Korando", "Rexton", "Musso", "Actyon", "Torres"
+        ),
+        "Dodge" to listOf(
+            "Attitude", "Journey", "Durango", "Charger", "Challenger", "Hornet"
+        ),
+        "RAM" to listOf(
+            "700", "1000", "1200", "1500", "2500", "3500", "Rampage"
+        ),
+        "Volvo" to listOf(
+            "XC40", "XC60", "XC90", "S60", "S90", "V60", "C40", "EX30"
+        ),
+        "Land Rover" to listOf(
+            "Defender", "Discovery", "Discovery Sport", "Range Rover", "Range Rover Sport",
+            "Range Rover Evoque", "Range Rover Velar"
+        ),
+        "Tesla" to listOf(
+            "Model 3", "Model Y", "Model S", "Model X", "Cybertruck"
+        ),
+        "BMW" to listOf(
+            "Serie 1", "Serie 2", "Serie 3", "Serie 4", "Serie 5", "Serie 7",
+            "X1", "X2", "X3", "X4", "X5", "X6", "X7", "iX", "i4"
+        ),
+        "Mercedes-Benz" to listOf(
+            "Clase A", "Clase B", "Clase C", "Clase E", "Clase S", "CLA", "GLA", "GLB",
+            "GLC", "GLE", "GLS", "Clase G", "Sprinter", "Vito"
+        ),
+        "Audi" to listOf(
+            "A1", "A3", "A4", "A5", "A6", "A7", "Q2", "Q3", "Q5", "Q7", "Q8", "e-tron", "TT"
+        ),
+        "Bajaj" to listOf(
+            "Boxer CT 100", "Boxer BM 150", "Pulsar NS 125", "Pulsar NS 160", "Pulsar NS 200",
+            "Pulsar N250", "Discover 125", "Dominar 400", "Platina", "Avenger"
+        ),
+        "Yamaha" to listOf(
+            "FZ 2.0", "FZ-S", "FZ 25", "YBR 125", "Crypton", "BWS", "NMAX", "XTZ 125",
+            "XTZ 150", "XTZ 250", "MT-03", "MT-07", "R3", "MT-09", "Calima"
+        ),
+        "AKT" to listOf(
+            "AK 110", "AK 125 NKD", "AK 150", "AK 180 TT", "Dynamic 125", "Evo 125",
+            "Flex 125", "Special 125", "TTR 180", "Jet 5"
+        ),
+        "Hero" to listOf(
+            "Eco Deluxe", "Splendor", "Hunk 160R", "Xpulse 200", "Dash", "Ignitor", "Thriller 200R"
+        ),
+        "KTM" to listOf(
+            "Duke 200", "Duke 250", "Duke 390", "RC 200", "RC 390", "Adventure 390", "Adventure 250"
+        ),
+        "Royal Enfield" to listOf(
+            "Classic 350", "Hunter 350", "Meteor 350", "Himalayan", "Interceptor 650", "Continental GT 650"
+        ),
+        "Kawasaki" to listOf(
+            "Ninja 400", "Ninja 300", "Z400", "Z650", "Z900", "Versys 650", "KLR 650", "Versys-X 300"
+        ),
+        "Triumph" to listOf(
+            "Speed 400", "Scrambler 400 X", "Trident 660", "Tiger Sport 660", "Tiger 900",
+            "Tiger 1200", "Street Triple", "Speed Triple", "Bonneville T100", "Bonneville T120",
+            "Scrambler 1200", "Rocket 3", "Thruxton", "Speedmaster"
+        ),
+        "CFMoto" to listOf(
+            "150 NK", "250 NK", "300 NK", "400 NK", "650 NK", "300 SR", "450 SR",
+            "650 MT", "800 MT", "450 MT", "Papio", "Cforce 520", "Cforce 1000", "Uforce 1000"
+        ),
+        "Otra" to listOf("Otra")
     )
 
     fun lineasDeMarca(marca: String?): List<String> =
