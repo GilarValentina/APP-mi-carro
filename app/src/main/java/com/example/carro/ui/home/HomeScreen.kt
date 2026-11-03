@@ -17,22 +17,30 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.EventNote
 import androidx.compose.material.icons.filled.Backup
 import androidx.compose.material.icons.filled.Build
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.DirectionsCar
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Speed
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -46,11 +54,6 @@ import com.example.carro.domain.plan.ActividadConEstado
 import com.example.carro.ui.historial.Formatos
 import com.example.carro.ui.navigation.Destinos
 
-/**
- * Inicio de la aplicación (RF-37): muestra los vehículos con alertas, los
- * mantenimientos próximos o vencidos y los gastos recientes, además del acceso
- * a cada módulo.
- */
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun HomeScreen(
@@ -61,41 +64,144 @@ fun HomeScreen(
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
     Scaffold(
-        topBar = { TopAppBar(title = { Text("MiCarro") }) }
+        topBar = {
+            TopAppBar(
+                title = { Text("MiCarro") },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background,
+                    titleContentColor = MaterialTheme.colorScheme.onBackground
+                ),
+                actions = {
+                    IconButton(onClick = { onNavegar(Destinos.ALERTAS) }) {
+                        Icon(
+                            imageVector = Icons.Filled.Notifications,
+                            contentDescription = "Ver alertas",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                }
+            )
+        }
     ) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .padding(16.dp)
+                .padding(horizontal = 16.dp, vertical = 12.dp)
                 .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            if (!state.cargando && !state.hayVehiculos) {
+            if (state.cargando) {
+                CircularProgressIndicator(
+                    modifier = Modifier
+                        .align(Alignment.CenterHorizontally)
+                        .padding(top = 32.dp),
+                    color = MaterialTheme.colorScheme.primary
+                )
+                return@Scaffold
+            }
+
+            if (!state.hayVehiculos) {
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable { onNavegar(Destinos.VEHICULOS) }
+                        .clickable { onNavegar(Destinos.VEHICULOS) },
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = MaterialTheme.colorScheme.onPrimary
+                    )
                 ) {
-                    Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        Text("Comienza registrando tu vehículo", style = MaterialTheme.typography.titleMedium)
+                    Column(
+                        Modifier.padding(20.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text("Comienza registrando tu vehículo", style = MaterialTheme.typography.titleLarge)
                         Text(
-                            "Con un vehículo registrado podrás programar su plan y llevar el historial.",
-                            style = MaterialTheme.typography.bodyMedium
+                            "Con un vehículo registrado podrás programar mantenimientos, alertas y revisiones.",
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                    }
+                }
+                return@Scaffold
+            }
+
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary
+                )
+            ) {
+                Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Text("Resumen general", style = MaterialTheme.typography.labelLarge)
+                    Text("Todo bajo control", style = MaterialTheme.typography.headlineSmall)
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            if (state.totalAlertas > 0) "${state.totalAlertas} alertas activas" else "Sin alertas pendientes",
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                        AssistChip(
+                            onClick = { onNavegar(Destinos.ALERTAS) },
+                            label = { Text("Ver detalle") }
                         )
                     }
                 }
             }
 
-            if (state.hayVehiculos) {
-                SeccionVehiculos(state.vehiculosConAlertas) { onNavegar(Destinos.ALERTAS) }
-                SeccionProximos(state.proximosMantenimientos) { onNavegar(Destinos.PLAN_MANTENIMIENTO) }
-                SeccionGastos(
-                    recientes = state.mantenimientosRecientes,
-                    gastoTrimestre = state.gastoUltimosTresMeses,
-                    onVerHistorial = { onNavegar(Destinos.HISTORIAL) }
+            FlowRow(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                SummaryMetricCard(
+                    modifier = Modifier.weight(1f),
+                    title = "Vehículos",
+                    value = state.vehiculosRegistrados.toString(),
+                    subtitle = "Registrados",
+                    icon = Icons.Filled.DirectionsCar,
+                    tint = MaterialTheme.colorScheme.primary,
+                    onClick = { onNavegar(Destinos.VEHICULOS) }
+                )
+                SummaryMetricCard(
+                    modifier = Modifier.weight(1f),
+                    title = "Mantenimientos",
+                    value = state.proximosMantenimientos.size.toString(),
+                    subtitle = "Próximos",
+                    icon = Icons.AutoMirrored.Filled.EventNote,
+                    tint = MaterialTheme.colorScheme.secondary,
+                    onClick = { onNavegar(Destinos.PLAN_MANTENIMIENTO) }
+                )
+                SummaryMetricCard(
+                    modifier = Modifier.weight(1f),
+                    title = "Alertas",
+                    value = state.alertasActivas.toString(),
+                    subtitle = "Activas",
+                    icon = Icons.Filled.Notifications,
+                    tint = MaterialTheme.colorScheme.tertiary,
+                    onClick = { onNavegar(Destinos.ALERTAS) }
+                )
+                SummaryMetricCard(
+                    modifier = Modifier.weight(1f),
+                    title = "Documentos",
+                    value = state.documentosProximos.toString(),
+                    subtitle = "Próximos a vencer",
+                    icon = Icons.Filled.Schedule,
+                    tint = MaterialTheme.colorScheme.error,
+                    onClick = { onNavegar(Destinos.ALERTAS) }
                 )
             }
+
+            SeccionVehiculos(state.vehiculosConAlertas) { onNavegar(Destinos.ALERTAS) }
+            SeccionProximos(state.proximosMantenimientos) { onNavegar(Destinos.PLAN_MANTENIMIENTO) }
+            SeccionGastos(
+                recientes = state.mantenimientosRecientes,
+                gastoTrimestre = state.gastoUltimosTresMeses,
+                onVerHistorial = { onNavegar(Destinos.HISTORIAL) }
+            )
 
             Text("Módulos", style = MaterialTheme.typography.titleMedium)
             val modulos = listOf(
@@ -125,13 +231,23 @@ fun HomeScreen(
                                     Modifier
                                 }
                             )
-                            .semantics { contentDescription = modulo.titulo }
+                            .semantics { contentDescription = modulo.titulo },
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surface,
+                            contentColor = MaterialTheme.colorScheme.onSurface
+                        )
                     ) {
                         Column(
-                            modifier = Modifier.fillMaxWidth().padding(16.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
                             verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            Icon(imageVector = modulo.icono, contentDescription = null)
+                            Icon(
+                                imageVector = modulo.icono,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary
+                            )
                             Text(text = modulo.titulo, style = MaterialTheme.typography.bodyLarge)
                         }
                     }
@@ -144,12 +260,50 @@ fun HomeScreen(
     }
 }
 
-/** Acceso a un módulo desde el inicio: título, icono y destino de navegación. */
 private data class ModuloInicio(
     val titulo: String,
     val icono: ImageVector,
     val ruta: String?
 )
+
+@Composable
+private fun SummaryMetricCard(
+    modifier: Modifier = Modifier,
+    title: String,
+    value: String,
+    subtitle: String,
+    icon: ImageVector,
+    tint: Color,
+    onClick: () -> Unit
+) {
+    Card(
+        modifier = modifier.clickable(onClick = onClick),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface,
+            contentColor = MaterialTheme.colorScheme.onSurface
+        )
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(title, style = MaterialTheme.typography.labelMedium)
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = tint
+                )
+            }
+            Text(value, style = MaterialTheme.typography.headlineSmall)
+            Text(subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+    }
+}
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -175,35 +329,65 @@ private fun SeccionVehiculos(vehiculos: List<VehiculoConAlertas>, onVerAlertas: 
 private fun SeccionProximos(actividades: List<ActividadConEstado>, onVerPlan: () -> Unit) {
     Text("Próximos mantenimientos", style = MaterialTheme.typography.titleMedium)
     if (actividades.isEmpty()) {
-        Text(
-            "No hay mantenimientos próximos ni vencidos.",
-            style = MaterialTheme.typography.bodyMedium
-        )
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surface,
+                contentColor = MaterialTheme.colorScheme.onSurface
+            )
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.CheckCircle,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary
+                )
+                Text("No hay mantenimientos próximos ni vencidos.", style = MaterialTheme.typography.bodyMedium)
+            }
+        }
         return
     }
+
     actividades.take(4).forEach { item ->
         val vencida = item.estado == EstadoActividad.VENCIDA
         Card(
             modifier = Modifier.fillMaxWidth().clickable { onVerPlan() },
-            colors = if (vencida) {
-                CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.errorContainer,
-                    contentColor = MaterialTheme.colorScheme.onErrorContainer
-                )
-            } else {
-                CardDefaults.cardColors()
-            }
+            colors = CardDefaults.cardColors(
+                containerColor = if (vencida) {
+                    MaterialTheme.colorScheme.errorContainer
+                } else {
+                    MaterialTheme.colorScheme.surface
+                },
+                contentColor = if (vencida) MaterialTheme.colorScheme.onErrorContainer else MaterialTheme.colorScheme.onSurface
+            )
         ) {
-            Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                Text(item.actividad.nombre, style = MaterialTheme.typography.bodyLarge)
-                Text(
-                    buildString {
-                        append(if (vencida) "Vencida" else "Próxima")
-                        item.actividad.proximaFecha?.let { append(" · ${Formatos.fecha(it)}") }
-                        item.actividad.proximoKm?.let { append(" · ${Formatos.kilometraje(it)}") }
-                    },
-                    style = MaterialTheme.typography.bodySmall
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = if (vencida) Icons.Filled.Warning else Icons.Filled.Schedule,
+                    contentDescription = null,
+                    tint = if (vencida) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
                 )
+                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                    Text(item.actividad.nombre, style = MaterialTheme.typography.bodyLarge)
+                    Text(
+                        buildString {
+                            append(if (vencida) "Vencida" else "Próxima")
+                            item.actividad.proximaFecha?.let { append(" · ${Formatos.fecha(it)}") }
+                            item.actividad.proximoKm?.let { append(" · ${Formatos.kilometraje(it)}") }
+                        },
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
             }
         }
     }
@@ -216,9 +400,26 @@ private fun SeccionGastos(
     onVerHistorial: () -> Unit
 ) {
     Text("Gastos recientes", style = MaterialTheme.typography.titleMedium)
-    Card(modifier = Modifier.fillMaxWidth().clickable { onVerHistorial() }) {
-        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            Text("Últimos 3 meses", style = MaterialTheme.typography.labelLarge)
+    Card(
+        modifier = Modifier.fillMaxWidth().clickable { onVerHistorial() },
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface,
+            contentColor = MaterialTheme.colorScheme.onSurface
+        )
+    ) {
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text("Últimos 3 meses", style = MaterialTheme.typography.labelLarge)
+                Icon(
+                    imageVector = Icons.Filled.Build,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            }
             Text(Formatos.moneda(gastoTrimestre), style = MaterialTheme.typography.headlineSmall)
             if (recientes.isEmpty()) {
                 Text("Aún no has registrado mantenimientos.", style = MaterialTheme.typography.bodyMedium)
@@ -226,7 +427,8 @@ private fun SeccionGastos(
                 recientes.forEach { entrada ->
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
                             "${Formatos.fecha(entrada.fecha)} · ${entrada.descripcion}",
@@ -235,7 +437,8 @@ private fun SeccionGastos(
                         )
                         Text(
                             Formatos.moneda(entrada.costoTotal),
-                            style = MaterialTheme.typography.bodySmall
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.primary
                         )
                     }
                 }

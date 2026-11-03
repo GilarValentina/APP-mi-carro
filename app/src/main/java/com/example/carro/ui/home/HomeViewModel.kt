@@ -13,6 +13,7 @@ import com.example.carro.domain.historial.EntradaHistorial
 import com.example.carro.domain.historial.PeriodoResumen
 import com.example.carro.domain.historial.ResumenCalculator
 import com.example.carro.domain.model.EstadoActividad
+import com.example.carro.domain.model.TipoAlerta
 import com.example.carro.domain.plan.ActividadConEstado
 import com.example.carro.domain.vehiculo.Vehiculo
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -38,10 +39,13 @@ data class HomeUiState(
     val proximosMantenimientos: List<ActividadConEstado> = emptyList(),
     val mantenimientosRecientes: List<EntradaHistorial> = emptyList(),
     val gastoUltimosTresMeses: Double = 0.0,
+    val alertasActivas: Int = 0,
+    val documentosProximos: Int = 0,
     val cargando: Boolean = true
 ) {
     val hayVehiculos: Boolean get() = vehiculosConAlertas.isNotEmpty()
-    val totalAlertas: Int get() = vehiculosConAlertas.sumOf { it.alertasActivas }
+    val vehiculosRegistrados: Int get() = vehiculosConAlertas.size
+    val totalAlertas: Int get() = alertasActivas
 }
 
 /**
@@ -74,6 +78,7 @@ class HomeViewModel(
             historialRepository.observarRecientes(LIMITE_RECIENTES)
         ) { vehiculos, alertas, actividades, recientes ->
             val alertasPorVehiculo = alertas.groupingBy { it.vehiculoId }.eachCount()
+            val alertasActivas = alertas.size
             HomeUiState(
                 vehiculosConAlertas = vehiculos
                     .map { VehiculoConAlertas(it, alertasPorVehiculo[it.id] ?: 0) }
@@ -85,6 +90,8 @@ class HomeViewModel(
                 gastoUltimosTresMeses = ResumenCalculator
                     .enPeriodo(recientes, PeriodoResumen.ULTIMOS_3_MESES)
                     .sumOf { it.costoTotal },
+                alertasActivas = alertasActivas,
+                documentosProximos = alertas.count { it.tipo == TipoAlerta.DOCUMENTO },
                 cargando = false
             )
         }.stateIn(

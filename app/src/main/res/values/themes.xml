@@ -1,5 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
-    <style name="Theme.Carro" parent="android:Theme.Material.Light.NoActionBar" />
+    <style name="Theme.Carro" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/navy_primary</item>
+        <item name="colorSecondary">@color/petroleum</item>
+        <item name="colorTertiary">@color/sky_blue</item>
+        <item name="android:colorBackground">@color/background</item>
+        <item name="colorSurface">@color/card_white</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorOnSecondary">@color/white</item>
+        <item name="colorOnBackground">@color/navy_primary</item>
+        <item name="colorOnSurface">@color/navy_primary</item>
+        <item name="android:statusBarColor">@color/navy_primary</item>
+        <item name="android:navigationBarColor">@color/background</item>
+    </style>
 </resources>
