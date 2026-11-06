@@ -53,6 +53,13 @@ class PerfilRepository(context: Context) {
         onboardingFlow.value = true
     }
 
+    /** Borra el perfil y las preferencias; la app vuelve a mostrar el onboarding (RF-40). */
+    fun reiniciar() {
+        prefs.edit().clear().commit()
+        perfilFlow.value = PerfilUsuario()
+        onboardingFlow.value = false
+    }
+
     /**
      * Preferencia de notificaciones push. La app aún no tiene servidor de mensajería:
      * se guarda la elección para cuando se integre un proveedor (p. ej. Firebase Cloud Messaging).

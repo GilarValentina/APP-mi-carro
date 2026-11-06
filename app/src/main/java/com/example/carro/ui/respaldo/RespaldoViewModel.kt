@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
 import com.example.carro.core.di.AppContainer
+import com.example.carro.data.repository.PerfilRepository
 import com.example.carro.data.repository.RespaldoRepository
 import com.example.carro.data.repository.ResultadoRespaldo
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -27,7 +28,8 @@ data class RespaldoUiState(
  * Toda operación informa su resultado al usuario, incluso si falla (RNF-15).
  */
 class RespaldoViewModel(
-    private val repository: RespaldoRepository
+    private val repository: RespaldoRepository,
+    private val perfilRepository: PerfilRepository
 ) : ViewModel() {
 
     private val estado = MutableStateFlow(RespaldoUiState())
@@ -40,7 +42,11 @@ class RespaldoViewModel(
     fun restaurarRespaldo(origen: Uri) =
         ejecutar(reinicioAlTerminar = true) { repository.restaurarRespaldo(origen) }
 
-    fun eliminarTodo() = ejecutar { repository.eliminarTodo() }
+    fun eliminarTodo() = ejecutar {
+        repository.eliminarTodo().also { resultado ->
+            if (resultado is ResultadoRespaldo.Exito) perfilRepository.reiniciar()
+        }
+    }
 
     private fun ejecutar(
         reinicioAlTerminar: Boolean = false,
@@ -73,7 +79,7 @@ class RespaldoViewModel(
             object : ViewModelProvider.Factory {
                 @Suppress("UNCHECKED_CAST")
                 override fun <T : ViewModel> create(modelClass: Class<T>, extras: CreationExtras): T =
-                    RespaldoViewModel(container.respaldoRepository) as T
+                    RespaldoViewModel(container.respaldoRepository, container.perfilRepository) as T
             }
     }
 }

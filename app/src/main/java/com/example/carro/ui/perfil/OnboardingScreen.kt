@@ -41,6 +41,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -48,9 +49,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.carro.data.repository.PerfilRepository
+import com.example.carro.data.repository.ResultadoRespaldo
 import com.example.carro.domain.perfil.CampoPerfil
 import com.example.carro.domain.perfil.PerfilUsuario
 import com.example.carro.domain.perfil.PerfilValidator
+import kotlinx.coroutines.launch
 
 private enum class PasoOnboarding { DATOS, NOTIFICACIONES, LISTO }
 
@@ -61,8 +64,12 @@ private enum class PasoOnboarding { DATOS, NOTIFICACIONES, LISTO }
 @Composable
 fun OnboardingScreen(
     perfilRepository: PerfilRepository,
+    limpiarDatosPrevios: suspend () -> ResultadoRespaldo,
     onTerminado: () -> Unit
 ) {
+    val scope = rememberCoroutineScope()
+    var preparando by remember { mutableStateOf(false) }
+    var errorLimpieza by remember { mutableStateOf<String?>(null) }
     var paso by remember { mutableStateOf(PasoOnboarding.DATOS) }
     var perfil by remember { mutableStateOf(perfilRepository.perfil.value) }
     var errores by remember { mutableStateOf<Map<CampoPerfil, String>>(emptyMap()) }
@@ -173,13 +180,28 @@ fun OnboardingScreen(
                             titulo = "¡Hola, ${perfil.primerNombre}!",
                             subtitulo = "Todo listo. Registra tu vehículo y MiCarro te ayudará con mantenimientos, documentos y citas."
                         ) { Icon(Icons.Filled.CheckCircle, null, tint = MaterialTheme.colorScheme.onPrimary) }
+                        errorLimpieza?.let {
+                            Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodyMedium)
+                        }
                         Button(
                             onClick = {
-                                perfilRepository.completarOnboarding()
-                                onTerminado()
+                                preparando = true
+                                errorLimpieza = null
+                                scope.launch {
+                                    // Un usuario nuevo empieza sin vehículos ni registros de instalaciones anteriores.
+                                    when (val resultado = limpiarDatosPrevios()) {
+                                        is ResultadoRespaldo.Exito -> {
+                                            perfilRepository.completarOnboarding()
+                                            onTerminado()
+                                        }
+                                        is ResultadoRespaldo.Error -> errorLimpieza = resultado.mensaje
+                                    }
+                                    preparando = false
+                                }
                             },
+                            enabled = !preparando,
                             modifier = Modifier.fillMaxWidth().height(52.dp)
-                        ) { Text("Comenzar") }
+                        ) { Text(if (preparando) "Preparando…" else "Comenzar") }
                     }
                 }
             }

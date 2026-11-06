@@ -18,7 +18,8 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        val perfilRepository = (application as MiCarroApplication).container.perfilRepository
+        val container = (application as MiCarroApplication).container
+        val perfilRepository = container.perfilRepository
         setContent {
             CarroTheme {
                 var mostrandoSplash by rememberSaveable { mutableStateOf(true) }
@@ -26,7 +27,11 @@ class MainActivity : ComponentActivity() {
                 when {
                     mostrandoSplash -> SplashScreen(onTerminado = { mostrandoSplash = false })
                     // Primer inicio: datos del usuario y permiso de notificaciones.
-                    !onboardingCompleto -> OnboardingScreen(perfilRepository = perfilRepository, onTerminado = {})
+                    !onboardingCompleto -> OnboardingScreen(
+                        perfilRepository = perfilRepository,
+                        limpiarDatosPrevios = { container.respaldoRepository.eliminarTodo() },
+                        onTerminado = {}
+                    )
                     else -> MiCarroNavHost()
                 }
             }
