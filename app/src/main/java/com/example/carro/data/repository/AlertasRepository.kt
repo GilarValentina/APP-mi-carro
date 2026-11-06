@@ -61,7 +61,7 @@ class AlertasRepository(
         ) { documentos, config ->
             val hoy = LocalDate.now()
             documentos
-                .map { CalculadorVencimiento.evaluar(it.toDomain(), hoy, config.anticipacionDias) }
+                .map { CalculadorVencimiento.evaluar(it.toDomain(), hoy, it.anticipacionDias ?: config.anticipacionDias) }
                 .sortedBy { it.diasRestantes }
         }
 
@@ -109,7 +109,7 @@ class AlertasRepository(
         val anticipacion = configuracionActual().anticipacionDias
         val pendientes = mutableListOf<DocumentoConEstado>()
         documentoDao.obtenerTodos().forEach { entity ->
-            val evaluado = CalculadorVencimiento.evaluar(entity.toDomain(), hoy, anticipacion)
+            val evaluado = CalculadorVencimiento.evaluar(entity.toDomain(), hoy, entity.anticipacionDias ?: anticipacion)
             if (evaluado.estado == EstadoVencimiento.VIGENTE) {
                 alertaDao.eliminarPorDocumento(entity.id)
             } else {
@@ -130,7 +130,11 @@ class AlertasRepository(
         hoy: LocalDate = LocalDate.now()
     ) {
         val estado = estadoPrevio
-            ?: CalculadorVencimiento.estado(documento.fechaVencimiento, hoy, configuracionActual().anticipacionDias)
+            ?: CalculadorVencimiento.estado(
+                documento.fechaVencimiento,
+                hoy,
+                documento.anticipacionDias ?: configuracionActual().anticipacionDias
+            )
         if (estado == EstadoVencimiento.VIGENTE) {
             alertaDao.eliminarPorDocumento(documento.id)
             return
@@ -162,7 +166,10 @@ private fun DocumentoEntity.toDomain(): Documento = Documento(
     vehiculoId = vehiculoId,
     tipo = TipoDocumento.desde(tipo),
     nombre = nombre,
-    fechaVencimiento = fechaVencimiento
+    fechaVencimiento = fechaVencimiento,
+    fechaExpedicion = fechaExpedicion,
+    adjuntoUri = adjuntoUri,
+    anticipacionDias = anticipacionDias
 )
 
 private fun Documento.toEntity(): DocumentoEntity = DocumentoEntity(
@@ -170,7 +177,10 @@ private fun Documento.toEntity(): DocumentoEntity = DocumentoEntity(
     vehiculoId = vehiculoId,
     tipo = tipo.name,
     nombre = nombre,
-    fechaVencimiento = fechaVencimiento
+    fechaVencimiento = fechaVencimiento,
+    fechaExpedicion = fechaExpedicion,
+    adjuntoUri = adjuntoUri,
+    anticipacionDias = anticipacionDias
 )
 
 private fun AlertaEntity.toDomain(): Alerta = Alerta(

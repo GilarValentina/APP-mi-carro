@@ -23,7 +23,10 @@ data class Vehiculo(
     val cilindraje: String? = null,
     val ciudadPicoPlaca: String? = null,
     val picoYPlaca: String? = null,
-    val esPrincipal: Boolean = false
+    val ciudadMatricula: String? = null,
+    val secretariaTransito: String? = null,
+    val esPrincipal: Boolean = false,
+    val archivado: Boolean = false
 ) {
     /** Nombre corto para mostrar en listas y encabezados. */
     val titulo: String get() = "$marca $linea $anio"

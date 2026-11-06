@@ -18,6 +18,8 @@ import com.example.carro.data.dao.VehiculoDao
 import com.example.carro.data.entity.ActividadMantenimientoEntity
 import com.example.carro.data.entity.AlertaEntity
 import com.example.carro.data.entity.CategoriaEntity
+import com.example.carro.data.entity.CitaEntity
+import com.example.carro.data.dao.CitaDao
 import com.example.carro.data.entity.DocumentoEntity
 import com.example.carro.data.entity.LecturaKilometrajeEntity
 import com.example.carro.data.entity.MantenimientoEntity
@@ -37,9 +39,10 @@ import com.example.carro.data.entity.VehiculoEntity
         MantenimientoEntity::class,
         RepuestoEntity::class,
         DocumentoEntity::class,
-        AlertaEntity::class
+        AlertaEntity::class,
+        CitaEntity::class
     ],
-    version = 2,
+    version = 3,
     exportSchema = true
 )
 @TypeConverters(Converters::class)
@@ -53,6 +56,7 @@ abstract class MiCarroDatabase : RoomDatabase() {
     abstract fun repuestoDao(): RepuestoDao
     abstract fun documentoDao(): DocumentoDao
     abstract fun alertaDao(): AlertaDao
+    abstract fun citaDao(): CitaDao
 
     companion object {
         /** Nombre del archivo local de la base de datos (usado por el respaldo, RF-39). */
@@ -66,6 +70,29 @@ abstract class MiCarroDatabase : RoomDatabase() {
             }
         }
 
+        /**
+         * Matrícula y secretaría de tránsito del vehículo, datos extra de documentos
+         * (expedición, adjunto, anticipación propia) y la nueva agenda de citas.
+         */
+        val MIGRATION_2_3 = object : Migration(2, 3) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE vehiculos ADD COLUMN ciudadMatricula TEXT")
+                db.execSQL("ALTER TABLE vehiculos ADD COLUMN secretariaTransito TEXT")
+                db.execSQL("ALTER TABLE documentos ADD COLUMN fechaExpedicion INTEGER")
+                db.execSQL("ALTER TABLE documentos ADD COLUMN adjuntoUri TEXT")
+                db.execSQL("ALTER TABLE documentos ADD COLUMN anticipacionDias INTEGER")
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `citas` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                        "`vehiculoId` INTEGER NOT NULL, `tipo` TEXT NOT NULL, `titulo` TEXT NOT NULL, " +
+                        "`lugar` TEXT, `fecha` INTEGER NOT NULL, `minutoDelDia` INTEGER NOT NULL, " +
+                        "`notas` TEXT, `anticipacionDias` INTEGER NOT NULL, `completada` INTEGER NOT NULL, " +
+                        "`creadoEn` INTEGER NOT NULL, FOREIGN KEY(`vehiculoId`) REFERENCES `vehiculos`(`id`) " +
+                        "ON UPDATE NO ACTION ON DELETE CASCADE )"
+                )
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_citas_vehiculoId` ON `citas` (`vehiculoId`)")
+            }
+        }
+
         @Volatile
         private var INSTANCE: MiCarroDatabase? = null
 
@@ -76,7 +103,7 @@ abstract class MiCarroDatabase : RoomDatabase() {
                     MiCarroDatabase::class.java,
                     NOMBRE_ARCHIVO
                 )
-                    .addMigrations(MIGRATION_1_2)
+                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
                     .fallbackToDestructiveMigration(dropAllTables = true)
                     .build()
                     .also { INSTANCE = it }

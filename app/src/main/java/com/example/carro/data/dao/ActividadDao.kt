@@ -15,6 +15,16 @@ interface ActividadDao {
     @Query("SELECT * FROM actividades_mantenimiento WHERE vehiculoId = :vehiculoId ORDER BY creadoEn DESC")
     fun observarPorVehiculo(vehiculoId: Long): Flow<List<ActividadMantenimientoEntity>>
 
+    @Query("SELECT * FROM actividades_mantenimiento WHERE vehiculoId = :vehiculoId")
+    suspend fun obtenerPorVehiculo(vehiculoId: Long): List<ActividadMantenimientoEntity>
+
+    /** Actividades activas de todos los vehículos no archivados (revisión diaria de alertas). */
+    @Query(
+        "SELECT a.* FROM actividades_mantenimiento a INNER JOIN vehiculos v ON v.id = a.vehiculoId " +
+            "WHERE a.activa = 1 AND v.archivado = 0"
+    )
+    suspend fun obtenerActivasDeVehiculosActivos(): List<ActividadMantenimientoEntity>
+
     @Query("SELECT * FROM actividades_mantenimiento WHERE id = :id")
     fun observarPorId(id: Long): Flow<ActividadMantenimientoEntity?>
 

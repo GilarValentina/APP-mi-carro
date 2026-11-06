@@ -10,7 +10,12 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.carro.MiCarroApplication
+import com.example.carro.domain.guias.GuiaEmergencia
+import com.example.carro.ui.agenda.AgendaRoute
+import com.example.carro.ui.agenda.KilometrajeRoute
 import com.example.carro.ui.alertas.AlertasRoute
+import com.example.carro.ui.guias.GuiaScreen
+import com.example.carro.ui.perfil.AjustesScreen
 import com.example.carro.ui.historial.HistorialRoute
 import com.example.carro.ui.home.HomeScreen
 import com.example.carro.ui.mantenimiento.MantenimientoRoute
@@ -99,6 +104,36 @@ fun MiCarroNavHost(
         composable(Destinos.RESPALDO) {
             RespaldoScreen(
                 viewModel = viewModel(factory = RespaldoViewModel.factory(container)),
+                onVolver = { navController.popBackStack() }
+            )
+        }
+        composable(Destinos.KILOMETRAJE) {
+            KilometrajeRoute(
+                container = container,
+                onRegistrarVehiculo = registrarVehiculo,
+                onVolver = { navController.popBackStack() }
+            )
+        }
+        composable(Destinos.AGENDA) {
+            AgendaRoute(
+                container = container,
+                onRegistrarVehiculo = registrarVehiculo,
+                onVolver = { navController.popBackStack() }
+            )
+        }
+        composable(Destinos.AJUSTES) {
+            AjustesScreen(
+                container = container,
+                onRespaldo = { navController.navigate(Destinos.RESPALDO) },
+                onVolver = { navController.popBackStack() }
+            )
+        }
+        composable(
+            route = Destinos.GUIA,
+            arguments = listOf(navArgument(Destinos.ARG_GUIA) { type = NavType.StringType })
+        ) { entry ->
+            GuiaScreen(
+                guia = GuiaEmergencia.desde(entry.arguments?.getString(Destinos.ARG_GUIA)),
                 onVolver = { navController.popBackStack() }
             )
         }

@@ -25,5 +25,10 @@ data class DocumentoEntity(
     val tipo: String,
     val nombre: String? = null,
     val fechaVencimiento: LocalDate,
+    val fechaExpedicion: LocalDate? = null,
+    /** URI de contenido del archivo adjunto (foto o PDF) elegido por el usuario. */
+    val adjuntoUri: String? = null,
+    /** Días de anticipación propios del documento; null usa la configuración general. */
+    val anticipacionDias: Int? = null,
     val creadoEn: Long = System.currentTimeMillis()
 )

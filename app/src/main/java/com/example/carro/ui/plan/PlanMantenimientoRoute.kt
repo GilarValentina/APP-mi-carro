@@ -41,7 +41,8 @@ fun PlanMantenimientoRoute(
             is PantallaPlan.Lista -> PlanMantenimientoScreen(
                 viewModel = viewModel,
                 onCrear = { pantalla = PantallaPlan.Formulario(null) },
-                onEditar = { id -> pantalla = PantallaPlan.Formulario(id) }
+                onEditar = { id -> pantalla = PantallaPlan.Formulario(id) },
+                onVolver = onVolver
             )
 
             is PantallaPlan.Formulario -> ActividadFormScreen(

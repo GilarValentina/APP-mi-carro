@@ -11,6 +11,13 @@ object Destinos {
     const val MANTENIMIENTOS = "mantenimientos"
     const val ALERTAS = "alertas"
     const val HISTORIAL = "historial"
+    const val AGENDA = "agenda"
+    const val AJUSTES = "ajustes"
+
+    // Guías de ayuda en carretera: una sola ruta parametrizada por el id de la guía.
+    const val ARG_GUIA = "guia"
+    const val GUIA = "guias/{$ARG_GUIA}"
+    fun guia(id: String): String = "guias/$id"
 
     /** Respaldo, restauración y borrado definitivo de los datos (RF-39, RF-40). */
     const val RESPALDO = "respaldo"

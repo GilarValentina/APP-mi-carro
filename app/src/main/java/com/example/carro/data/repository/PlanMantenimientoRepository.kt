@@ -9,6 +9,7 @@ import com.example.carro.domain.plan.Actividad
 import com.example.carro.domain.plan.ActividadConEstado
 import com.example.carro.domain.plan.CategoriasPredeterminadas
 import com.example.carro.domain.plan.EstadoCalculator
+import com.example.carro.domain.plan.PlanPreventivoBase
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import java.time.LocalDate
@@ -61,6 +62,55 @@ class PlanMantenimientoRepository(
     suspend fun eliminar(actividad: Actividad) {
         actividadDao.eliminar(actividad.toEntity())
     }
+
+    /**
+     * RF-16: aplica el plan preventivo base (5.000 / 10.000 / 20.000 km) al vehículo.
+     * No duplica actividades que ya existan con el mismo nombre. Devuelve cuántas creó.
+     */
+    suspend fun aplicarPlanBase(vehiculoId: Long, kmActual: Long): Int {
+        sembrarCategoriasSiVacio()
+        val categorias = categoriaDao.obtenerTodas().associateBy { it.nombre }
+        val existentes = actividadDao.obtenerPorVehiculo(vehiculoId).map { it.nombre.lowercase() }.toSet()
+        var creadas = 0
+        PlanPreventivoBase.lista
+            .filter { it.nombre.lowercase() !in existentes }
+            .forEach { plantilla ->
+                val intervalo = plantilla.intervaloKm ?: return@forEach
+                actividadDao.insertar(
+                    Actividad(
+                        vehiculoId = vehiculoId,
+                        nombre = plantilla.nombre,
+                        categoriaId = categorias[plantilla.categoria]?.id,
+                        descripcion = "Cada ${"%,d".format(intervalo).replace(',', '.')} km",
+                        programarPorKm = true,
+                        intervaloKm = intervalo,
+                        proximoKm = PlanPreventivoBase.proximoHito(kmActual, intervalo),
+                        anticipacionKm = PlanPreventivoBase.anticipacionKm(intervalo)
+                    ).toEntity()
+                )
+                creadas++
+            }
+        return creadas
+    }
+
+    /**
+     * RF-28: actividades activas próximas o vencidas de todos los vehículos activos,
+     * para la revisión diaria en segundo plano.
+     */
+    suspend fun pendientesDeAviso(
+        kilometrajeDe: suspend (Long) -> Long?,
+        hoy: LocalDate = LocalDate.now()
+    ): List<ActividadConEstado> =
+        actividadDao.obtenerActivasDeVehiculosActivos().mapNotNull { entity ->
+            val actividad = entity.toDomain()
+            val km = kilometrajeDe(actividad.vehiculoId) ?: return@mapNotNull null
+            val estado = EstadoCalculator.calcular(actividad, hoy, km)
+            if (estado == EstadoActividad.PROXIMA || estado == EstadoActividad.VENCIDA) {
+                ActividadConEstado(actividad, estado)
+            } else {
+                null
+            }
+        }
 
     /** RF-12: siembra las categorías iniciales si la tabla está vacía. */
     suspend fun sembrarCategoriasSiVacio() {

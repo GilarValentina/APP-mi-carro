@@ -12,12 +12,14 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 /** Estado de UI del listado de vehículos (RF-01 a RF-05). */
 data class VehiculosUiState(
     val vehiculos: List<Vehiculo> = emptyList(),
+    val archivados: List<Vehiculo> = emptyList(),
     val cargando: Boolean = true
 )
 
@@ -30,8 +32,9 @@ class VehiculosViewModel(
     val mensajeUsuario: StateFlow<String?> = mensaje.asStateFlow()
 
     val uiState: StateFlow<VehiculosUiState> =
-        repository.observarVehiculos()
-            .map { VehiculosUiState(vehiculos = it, cargando = false) }
+        combine(repository.observarVehiculos(), repository.observarArchivados()) { activos, archivados ->
+            VehiculosUiState(vehiculos = activos, archivados = archivados, cargando = false)
+        }
             .stateIn(
                 scope = viewModelScope,
                 started = SharingStarted.WhileSubscribed(5_000),
@@ -50,6 +53,20 @@ class VehiculosViewModel(
         viewModelScope.launch {
             repository.eliminar(vehiculo.id)
             mensaje.value = "Vehículo ${vehiculo.placa} eliminado"
+        }
+    }
+
+    fun archivar(vehiculo: Vehiculo) {
+        viewModelScope.launch {
+            repository.archivar(vehiculo.id)
+            mensaje.value = "${vehiculo.placa} archivado. Puedes restaurarlo en la pestaña Archivados."
+        }
+    }
+
+    fun restaurar(vehiculo: Vehiculo) {
+        viewModelScope.launch {
+            repository.restaurar(vehiculo.id)
+            mensaje.value = "${vehiculo.placa} restaurado"
         }
     }
 

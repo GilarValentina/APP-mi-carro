@@ -6,6 +6,14 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
 import com.example.carro.core.di.AppContainer
 import com.example.carro.data.repository.AlertasRepository
+import com.example.carro.data.repository.CitasRepository
+import com.example.carro.data.repository.PerfilRepository
+import com.example.carro.domain.agenda.Cita
+import com.example.carro.domain.perfil.PerfilUsuario
+import com.example.carro.domain.picoyplaca.EstadoPicoYPlaca
+import com.example.carro.domain.picoyplaca.ReglasLocalesPicoYPlaca
+import java.time.LocalDate
+import java.time.LocalDateTime
 import com.example.carro.data.repository.HistorialRepository
 import com.example.carro.data.repository.PlanMantenimientoRepository
 import com.example.carro.data.repository.VehiculoRepository
@@ -41,6 +49,10 @@ data class HomeUiState(
     val gastoUltimosTresMeses: Double = 0.0,
     val alertasActivas: Int = 0,
     val documentosProximos: Int = 0,
+    val perfil: PerfilUsuario = PerfilUsuario(),
+    val principal: Vehiculo? = null,
+    val picoYPlaca: EstadoPicoYPlaca? = null,
+    val proximaCita: Cita? = null,
     val cargando: Boolean = true
 ) {
     val hayVehiculos: Boolean get() = vehiculosConAlertas.isNotEmpty()
@@ -58,7 +70,9 @@ class HomeViewModel(
     vehiculoRepository: VehiculoRepository,
     planRepository: PlanMantenimientoRepository,
     alertasRepository: AlertasRepository,
-    historialRepository: HistorialRepository
+    historialRepository: HistorialRepository,
+    perfilRepository: PerfilRepository,
+    citasRepository: CitasRepository
 ) : ViewModel() {
 
     private val actividadesDelPrincipal =
@@ -68,6 +82,21 @@ class HomeViewModel(
             } else {
                 planRepository.observarActividades(vehiculo.id, vehiculo.kilometrajeActual)
             }
+        }
+
+    /** Perfil, vehículo principal y su próxima cita, para el encabezado del panel. */
+    private val encabezado =
+        combine(
+            perfilRepository.perfil,
+            vehiculoRepository.observarPrincipal(),
+            citasRepository.observarPendientes()
+        ) { perfil, principal, citas ->
+            val ahora = LocalDateTime.now()
+            Triple(
+                perfil,
+                principal,
+                citas.filter { it.vehiculoId == principal?.id && !it.momento.isBefore(ahora) }.minByOrNull { it.momento }
+            )
         }
 
     val uiState: StateFlow<HomeUiState> =
@@ -94,6 +123,17 @@ class HomeViewModel(
                 documentosProximos = alertas.count { it.tipo == TipoAlerta.DOCUMENTO },
                 cargando = false
             )
+        }.combine(encabezado) { estado, (perfil, principal, cita) ->
+            estado.copy(
+                perfil = perfil,
+                principal = principal,
+                picoYPlaca = principal?.let { v ->
+                    // Ciudad de circulación del vehículo; si no tiene, la ciudad del perfil.
+                    val ciudad = v.ciudadPicoPlaca ?: perfil.ciudad.ifBlank { null }
+                    ciudad?.let { ReglasLocalesPicoYPlaca.consultar(it, v.placa, v.tipo, LocalDate.now()) }
+                },
+                proximaCita = cita
+            )
         }.stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5_000),
@@ -109,7 +149,9 @@ class HomeViewModel(
                         container.vehiculoRepository,
                         container.planMantenimientoRepository,
                         container.alertasRepository,
-                        container.historialRepository
+                        container.historialRepository,
+                        container.perfilRepository,
+                        container.citasRepository
                     ) as T
             }
     }

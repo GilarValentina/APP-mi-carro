@@ -28,6 +28,32 @@ object VehiculoValidator {
     fun normalizarPlaca(placa: String): String =
         placa.uppercase().replace("-", "").filter { it.isLetterOrDigit() }
 
+    /** Validación inmediata mientras se escribe: indica si la placa ya tiene un formato válido. */
+    fun placaValida(placa: String, tipo: com.example.carro.domain.model.TipoVehiculo): Boolean {
+        val normalizada = normalizarPlaca(placa)
+        return if (tipo.esMoto) PLACA_MOTO.matches(normalizada) else PLACA_AUTOMOVIL.matches(normalizada)
+    }
+
+    /**
+     * Restringe lo que se puede escribir en la placa al patrón del tipo:
+     * tres letras, luego números y, solo en motos, una letra final.
+     */
+    fun filtrarEntradaPlaca(entrada: String, tipo: com.example.carro.domain.model.TipoVehiculo): String {
+        val limpio = normalizarPlaca(entrada)
+        val resultado = StringBuilder()
+        for (c in limpio) {
+            val i = resultado.length
+            val aceptado = when {
+                i < 3 -> c.isLetter()
+                i < 5 -> c.isDigit()
+                i == 5 -> if (tipo.esMoto) c.isLetter() else c.isDigit()
+                else -> false
+            }
+            if (aceptado) resultado.append(c) else break
+        }
+        return resultado.toString()
+    }
+
     /**
      * @param placaDuplicada si ya existe otro vehículo con la misma placa normalizada (RF-05).
      * @param anioActual año de referencia; se admite hasta el año siguiente (modelos nuevos).
@@ -39,20 +65,14 @@ object VehiculoValidator {
     ): ResultadoValidacionVehiculo {
         val errores = mutableMapOf<CampoVehiculo, String>()
         val placa = normalizarPlaca(vehiculo.placa)
-        val patronPlaca = when (vehiculo.tipo) {
-            com.example.carro.domain.model.TipoVehiculo.MOTOCICLETA -> PLACA_MOTO
-            else -> PLACA_AUTOMOVIL
-        }
+        val patronPlaca = if (vehiculo.tipo.esMoto) PLACA_MOTO else PLACA_AUTOMOVIL
 
         when {
             placa.isEmpty() -> errores[CampoVehiculo.PLACA] = "La placa es obligatoria."
             !patronPlaca.matches(placa) -> {
-                val esperado = if (vehiculo.tipo == com.example.carro.domain.model.TipoVehiculo.MOTOCICLETA) {
-                    "ABC12D"
-                } else {
-                    "ABC123"
-                }
-                errores[CampoVehiculo.PLACA] = "La placa no coincide con el formato requerido para ${vehiculo.tipo.etiqueta.lowercase()}. Ejemplo: $esperado."
+                errores[CampoVehiculo.PLACA] =
+                    "La placa no coincide con el formato requerido para ${vehiculo.tipo.etiqueta.lowercase()}. " +
+                        "Ejemplo: ${vehiculo.tipo.ejemploPlaca}."
             }
             placaDuplicada -> errores[CampoVehiculo.PLACA] = "Ya existe un vehículo con la placa $placa."
         }

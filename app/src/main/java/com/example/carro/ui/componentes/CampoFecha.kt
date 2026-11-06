@@ -41,11 +41,19 @@ fun CampoFecha(
 ) {
     var mostrandoCalendario by remember { mutableStateOf(false) }
     val seleccionada = remember(valor) { runCatching { LocalDate.parse(valor.trim()) }.getOrNull() }
+    // Tocar cualquier parte del campo abre el calendario, no solo el ícono.
+    val interaccion = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
+    androidx.compose.runtime.LaunchedEffect(interaccion) {
+        interaccion.interactions.collect {
+            if (it is androidx.compose.foundation.interaction.PressInteraction.Release) mostrandoCalendario = true
+        }
+    }
 
     OutlinedTextField(
         value = valor,
         onValueChange = {},
         readOnly = true,
+        interactionSource = interaccion,
         label = { Text(etiqueta) },
         singleLine = true,
         isError = esError,

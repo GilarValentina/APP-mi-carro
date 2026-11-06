@@ -19,6 +19,9 @@ interface CategoriaDao {
     @Query("SELECT COUNT(*) FROM categorias")
     suspend fun contar(): Int
 
+    @Query("SELECT * FROM categorias")
+    suspend fun obtenerTodas(): List<CategoriaEntity>
+
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertar(categoria: CategoriaEntity): Long
 

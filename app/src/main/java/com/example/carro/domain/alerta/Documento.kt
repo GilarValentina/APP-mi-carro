@@ -12,7 +12,12 @@ data class Documento(
     val vehiculoId: Long,
     val tipo: TipoDocumento,
     val nombre: String? = null,
-    val fechaVencimiento: LocalDate
+    val fechaVencimiento: LocalDate,
+    val fechaExpedicion: LocalDate? = null,
+    /** URI de contenido del adjunto (foto o PDF) con permiso persistente. */
+    val adjuntoUri: String? = null,
+    /** Anticipación propia del recordatorio; null usa la configuración general (RF-29). */
+    val anticipacionDias: Int? = null
 ) {
     /** Nombre a mostrar: el personalizado o la etiqueta del tipo. */
     val titulo: String get() = nombre?.takeIf { it.isNotBlank() } ?: tipo.etiqueta
