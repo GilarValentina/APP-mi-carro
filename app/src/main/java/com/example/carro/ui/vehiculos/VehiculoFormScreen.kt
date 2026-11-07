@@ -119,7 +119,9 @@ fun VehiculoFormScreen(
                                     it.copy(
                                         tipo = tipo,
                                         placa = VehiculoValidator.filtrarEntradaPlaca(it.placa, tipo),
-                                        cilindraje = it.cilindraje.takeIf { c -> c in CatalogoFormulario.cilindrajes(tipo) }.orEmpty()
+                                        cilindraje = it.cilindraje.takeIf { c -> c in CatalogoFormulario.cilindrajes(tipo) }.orEmpty(),
+                                        marca = it.marca.takeIf { m -> m in VehiculoCatalog.marcas(tipo) }.orEmpty(),
+                                        linea = it.linea.takeIf { l -> l in VehiculoCatalog.lineasDeMarca(it.marca, tipo) }.orEmpty()
                                     )
                                 }
                             },
@@ -156,7 +158,7 @@ fun VehiculoFormScreen(
                 SelectorDesplegable(
                     etiqueta = "Marca *",
                     buscable = true,
-                    opciones = VehiculoCatalog.marcas,
+                    opciones = VehiculoCatalog.marcas(f.tipo),
                     seleccionado = f.marca.ifBlank { null },
                     onSeleccion = { marca ->
                         viewModel.actualizar(CampoVehiculo.MARCA) { it.copy(marca = marca, linea = "") }
@@ -167,7 +169,7 @@ fun VehiculoFormScreen(
                 SelectorDesplegable(
                     etiqueta = "Línea *",
                     buscable = true,
-                    opciones = VehiculoCatalog.lineasDeMarca(f.marca),
+                    opciones = VehiculoCatalog.lineasDeMarca(f.marca, f.tipo),
                     seleccionado = f.linea.ifBlank { null },
                     onSeleccion = { linea -> viewModel.actualizar(CampoVehiculo.LINEA) { it.copy(linea = linea) } },
                     habilitado = f.marca.isNotBlank(),

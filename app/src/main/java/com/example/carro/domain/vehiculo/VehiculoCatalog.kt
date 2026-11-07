@@ -1,52 +1,9 @@
 package com.example.carro.domain.vehiculo
 
-object VehiculoCatalog {
-    val marcas: List<String> = listOf(
-        "Chevrolet",
-        "Renault",
-        "Mazda",
-        "Toyota",
-        "Kia",
-        "Nissan",
-        "Hyundai",
-        "Suzuki",
-        "Volkswagen",
-        "Ford",
-        "Honda",
-        "Mitsubishi",
-        "Fiat",
-        "Jeep",
-        "Peugeot",
-        "Citroën",
-        "Subaru",
-        "Chery",
-        "JAC",
-        "BYD",
-        "Changan",
-        "Great Wall",
-        "Foton",
-        "SsangYong",
-        "Dodge",
-        "RAM",
-        "Volvo",
-        "Land Rover",
-        "Tesla",
-        "BMW",
-        "Mercedes-Benz",
-        "Audi",
-        "Bajaj",
-        "Yamaha",
-        "AKT",
-        "Hero",
-        "KTM",
-        "Royal Enfield",
-        "Kawasaki",
-        "Triumph",
-        "CFMoto",
-        "Otra"
-    )
+import com.example.carro.domain.model.TipoVehiculo
 
-    private val lineasPorMarca: Map<String, List<String>> = mapOf(
+object VehiculoCatalog {
+    private val lineasCarros: Map<String, List<String>> = mapOf(
         "Chevrolet" to listOf(
             "Spark", "Spark GT", "Spark Life", "Beat", "Onix", "Onix Turbo", "Sail", "Aveo",
             "Joy", "Tracker", "Captiva", "Equinox", "Groove", "Blazer", "Traverse", "Montana",
@@ -160,7 +117,10 @@ object VehiculoCatalog {
         ),
         "Audi" to listOf(
             "A1", "A3", "A4", "A5", "A6", "A7", "Q2", "Q3", "Q5", "Q7", "Q8", "e-tron", "TT"
-        ),
+        )
+    )
+
+    private val lineasMotos: Map<String, List<String>> = mapOf(
         "Bajaj" to listOf(
             "Boxer CT 100", "Boxer BM 150", "Pulsar NS 125", "Pulsar NS 160", "Pulsar NS 200",
             "Pulsar N250", "Discover 125", "Dominar 400", "Platina", "Avenger"
@@ -173,8 +133,23 @@ object VehiculoCatalog {
             "AK 110", "AK 125 NKD", "AK 150", "AK 180 TT", "Dynamic 125", "Evo 125",
             "Flex 125", "Special 125", "TTR 180", "Jet 5"
         ),
+        "Honda" to listOf(
+            "CB 125F", "CB 160F", "CB 190R", "CB 300F", "CB 500F", "XR 150L", "XR 190L",
+            "XRE 300", "Wave 110", "Dio 110", "Navi", "PCX 160", "ADV 160", "Africa Twin"
+        ),
+        "Suzuki" to listOf(
+            "AX 100", "AX4", "Best 125", "Viva R", "GN 125", "Gixxer 150", "Gixxer 250",
+            "DR 150", "DR 650", "V-Strom 250", "V-Strom 650", "Burgman Street", "GSX-S750"
+        ),
         "Hero" to listOf(
             "Eco Deluxe", "Splendor", "Hunk 160R", "Xpulse 200", "Dash", "Ignitor", "Thriller 200R"
+        ),
+        "TVS" to listOf(
+            "Sport 100", "Raider 125", "Apache RTR 160", "Apache RTR 200", "Apache RR 310",
+            "NTorq 125", "Jupiter", "Stryker 125"
+        ),
+        "Victory" to listOf(
+            "One", "Advance R", "MRX 125", "MRX 150", "Nitro 125", "Bomber 125", "Black 125", "Venom 400"
         ),
         "KTM" to listOf(
             "Duke 200", "Duke 250", "Duke 390", "RC 200", "RC 390", "Adventure 390", "Adventure 250"
@@ -194,13 +169,60 @@ object VehiculoCatalog {
             "150 NK", "250 NK", "300 NK", "400 NK", "650 NK", "300 SR", "450 SR",
             "650 MT", "800 MT", "450 MT", "Papio", "Cforce 520", "Cforce 1000", "Uforce 1000"
         ),
-        "Otra" to listOf("Otra")
+        "BMW" to listOf(
+            "G 310 R", "G 310 GS", "F 750 GS", "F 850 GS", "F 900 R", "R 1250 GS", "R 1300 GS", "S 1000 RR"
+        ),
+        "Ducati" to listOf(
+            "Monster", "Scrambler", "Multistrada V2", "Multistrada V4", "Panigale V2", "Panigale V4", "DesertX"
+        ),
+        "Harley-Davidson" to listOf(
+            "Nightster", "Sportster S", "Street Bob", "Fat Boy", "Pan America", "Road King", "Street Glide"
+        )
     )
 
-    fun lineasDeMarca(marca: String?): List<String> =
-        if (marca.isNullOrBlank()) emptyList() else lineasPorMarca[marca]?.sorted() ?: emptyList()
+    private val lineasCamiones: Map<String, List<String>> = mapOf(
+        "Chevrolet" to listOf("NHR", "NKR", "NPR", "NQR", "FRR", "FTR", "FVR", "FVZ"),
+        "Hino" to listOf("Serie 300 Dutro", "Serie 500 FC", "Serie 500 FG", "Serie 500 GH", "Serie 700"),
+        "Isuzu" to listOf("ELF 100", "ELF 300", "ELF 400", "ELF 600", "Forward 800", "Forward 1100"),
+        "Foton" to listOf("Aumark", "Auman", "BJ1039", "Ollin", "Miler"),
+        "JAC" to listOf("X200", "1035", "1040", "1063", "1083", "Gallop"),
+        "Hyundai" to listOf("HD65", "HD78", "HD120", "Mighty", "Xcient"),
+        "Kia" to listOf("K2500", "K2700", "K3000", "K4000"),
+        "JMC" to listOf("Carrying", "N720", "N800", "N900"),
+        "Mercedes-Benz" to listOf("Accelo", "Atego", "Axor", "Actros", "Arocs"),
+        "Volvo" to listOf("FH", "FM", "FMX", "VM"),
+        "Scania" to listOf("Serie P", "Serie G", "Serie R", "Serie S"),
+        "Kenworth" to listOf("T370", "T680", "T800", "T880", "W900"),
+        "International" to listOf("CV", "MV", "HV", "LT", "Lonestar", "ProStar", "7600"),
+        "Freightliner" to listOf("M2 106", "M2 112", "Cascadia", "Columbia", "114SD"),
+        "Fuso" to listOf("Canter", "Fighter", "FI", "FJ"),
+        "Dongfeng" to listOf("Captain", "Duolika", "KR", "KL"),
+        "Iveco" to listOf("Daily", "Tector", "Stralis", "S-Way", "Trakker"),
+        "Mack" to listOf("Granite", "Anthem", "Pinnacle", "Vision"),
+        "Sinotruk" to listOf("Howo", "Sitrak", "Homan")
+    )
 
-    fun descripcionPicoPlaca(ciudad: String, tipo: com.example.carro.domain.model.TipoVehiculo): String {
+    private const val OTRA = "Otra"
+
+    private fun catalogo(tipo: TipoVehiculo): Map<String, List<String>> = when (tipo) {
+        TipoVehiculo.AUTOMOVIL, TipoVehiculo.CAMIONETA, TipoVehiculo.CAMPERO -> lineasCarros
+        TipoVehiculo.MOTOCICLETA -> lineasMotos
+        TipoVehiculo.CAMION -> lineasCamiones
+        TipoVehiculo.OTRO -> (lineasCarros.keys + lineasMotos.keys + lineasCamiones.keys).associateWith { marca ->
+            listOf(lineasCarros, lineasMotos, lineasCamiones).flatMap { it[marca].orEmpty() }.distinct()
+        }
+    }
+
+    /** Marcas que aplican al [tipo] de vehículo; siempre termina con "Otra". */
+    fun marcas(tipo: TipoVehiculo): List<String> = catalogo(tipo).keys.toList() + OTRA
+
+    fun lineasDeMarca(marca: String?, tipo: TipoVehiculo): List<String> = when {
+        marca.isNullOrBlank() -> emptyList()
+        marca == OTRA -> listOf(OTRA)
+        else -> catalogo(tipo)[marca]?.sorted().orEmpty()
+    }
+
+    fun descripcionPicoPlaca(ciudad: String, tipo: TipoVehiculo): String {
         val base = when (ciudad.trim()) {
             "Bogotá" -> "Restricción del pico y placa en Bogotá: horario restringido de lunes a viernes según el último dígito."
             "Medellín" -> "Restricción del pico y placa en Medellín: aplica en horas pico según el último dígito."
@@ -209,7 +231,7 @@ object VehiculoCatalog {
             "Cartagena" -> "Restricción del pico y placa en Cartagena: aplica según el último dígito y el horario municipal."
             else -> "Pico y placa según la regulación municipal de la ciudad seleccionada."
         }
-        return if (tipo == com.example.carro.domain.model.TipoVehiculo.MOTOCICLETA) {
+        return if (tipo == TipoVehiculo.MOTOCICLETA) {
             "$base (Motos: reglas particulares según ciudad y horario)."
         } else {
             base
