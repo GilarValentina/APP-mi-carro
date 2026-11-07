@@ -19,7 +19,12 @@ import androidx.compose.material.icons.filled.Backup
 import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.DirectionsCar
+import androidx.compose.material.icons.filled.Event
 import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.ui.text.font.FontWeight
+import com.example.carro.ui.componentes.SkeletonCarga
+import com.example.carro.ui.perfil.saludo
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Speed
@@ -66,7 +71,20 @@ fun HomeScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("MiCarro") },
+                title = {
+                    Column {
+                        Text(
+                            saludo(state.perfil),
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            "Qué bueno verte de nuevo",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.background,
                     titleContentColor = MaterialTheme.colorScheme.onBackground
@@ -76,6 +94,13 @@ fun HomeScreen(
                         Icon(
                             imageVector = Icons.Filled.Notifications,
                             contentDescription = "Ver alertas",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                    IconButton(onClick = { onNavegar(Destinos.AJUSTES) }) {
+                        Icon(
+                            imageVector = Icons.Filled.Settings,
+                            contentDescription = "Ajustes y perfil",
                             tint = MaterialTheme.colorScheme.primary
                         )
                     }
@@ -92,12 +117,7 @@ fun HomeScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             if (state.cargando) {
-                CircularProgressIndicator(
-                    modifier = Modifier
-                        .align(Alignment.CenterHorizontally)
-                        .padding(top = 32.dp),
-                    color = MaterialTheme.colorScheme.primary
-                )
+                SkeletonCarga(Modifier.fillMaxWidth())
                 return@Scaffold
             }
 
@@ -122,7 +142,20 @@ fun HomeScreen(
                         )
                     }
                 }
+                SeccionGuias(onNavegar)
                 return@Scaffold
+            }
+
+            state.principal?.let { principal ->
+                TarjetaVehiculoPrincipal(
+                    vehiculo = principal,
+                    picoYPlaca = state.picoYPlaca,
+                    onClick = { onNavegar(Destinos.VEHICULOS) }
+                )
+            }
+            AccesosRapidos(onNavegar)
+            state.proximaCita?.let { cita ->
+                TarjetaProximaCita(cita) { onNavegar(Destinos.AGENDA) }
             }
 
             Card(
@@ -134,19 +167,26 @@ fun HomeScreen(
             ) {
                 Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     Text("Resumen general", style = MaterialTheme.typography.labelLarge)
-                    Text("Todo bajo control", style = MaterialTheme.typography.headlineSmall)
+                    Text(
+                        if (state.totalAlertas > 0 || state.proximosMantenimientos.isNotEmpty()) "Hay pendientes por revisar" else "Todo bajo control",
+                        style = MaterialTheme.typography.headlineSmall
+                    )
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            if (state.totalAlertas > 0) "${state.totalAlertas} alertas activas" else "Sin alertas pendientes",
+                            if (state.totalAlertas == 1) "1 alerta activa" else if (state.totalAlertas > 1) "${state.totalAlertas} alertas activas" else "Sin alertas pendientes",
                             style = MaterialTheme.typography.bodyLarge
                         )
                         AssistChip(
                             onClick = { onNavegar(Destinos.ALERTAS) },
-                            label = { Text("Ver detalle") }
+                            label = { Text("Ver detalle") },
+                            colors = androidx.compose.material3.AssistChipDefaults.assistChipColors(
+                                labelColor = MaterialTheme.colorScheme.onPrimary
+                            ),
+                            border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.6f))
                         )
                     }
                 }
@@ -206,12 +246,14 @@ fun HomeScreen(
             Text("Módulos", style = MaterialTheme.typography.titleMedium)
             val modulos = listOf(
                 ModuloInicio("Vehículos", Icons.Filled.DirectionsCar, Destinos.VEHICULOS),
-                ModuloInicio("Kilometraje", Icons.Filled.Speed, null),
+                ModuloInicio("Kilometraje", Icons.Filled.Speed, Destinos.KILOMETRAJE),
+                ModuloInicio("Agenda", Icons.Filled.Event, Destinos.AGENDA),
                 ModuloInicio("Plan", Icons.AutoMirrored.Filled.EventNote, Destinos.PLAN_MANTENIMIENTO),
                 ModuloInicio("Mantenimientos", Icons.Filled.Build, Destinos.MANTENIMIENTOS),
                 ModuloInicio("Alertas", Icons.Filled.Notifications, Destinos.ALERTAS),
                 ModuloInicio("Historial", Icons.Filled.History, Destinos.HISTORIAL),
-                ModuloInicio("Respaldo", Icons.Filled.Backup, Destinos.RESPALDO)
+                ModuloInicio("Respaldo", Icons.Filled.Backup, Destinos.RESPALDO),
+                ModuloInicio("Ajustes", Icons.Filled.Settings, Destinos.AJUSTES)
             )
             FlowRow(
                 modifier = Modifier.fillMaxWidth(),
@@ -256,6 +298,8 @@ fun HomeScreen(
                     Spacer(Modifier.weight(1f))
                 }
             }
+
+            SeccionGuias(onNavegar)
         }
     }
 }

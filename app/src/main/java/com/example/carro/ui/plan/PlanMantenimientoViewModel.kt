@@ -31,8 +31,20 @@ data class PlanUiState(
 class PlanMantenimientoViewModel(
     private val repository: PlanMantenimientoRepository,
     private val vehiculoId: Long,
-    private val kilometrajeActual: Long
+    val kilometrajeActual: Long
 ) : ViewModel() {
+
+    /** Aplica el plan preventivo base de 5.000 / 10.000 / 20.000 km al vehículo. */
+    fun aplicarPlanBase() {
+        viewModelScope.launch {
+            val creadas = repository.aplicarPlanBase(vehiculoId, kilometrajeActual)
+            mensaje.value = if (creadas > 0) {
+                "Se agregaron $creadas actividades del plan preventivo"
+            } else {
+                "El plan preventivo ya estaba aplicado"
+            }
+        }
+    }
 
     private val mensaje = MutableStateFlow<String?>(null)
     val mensajeUsuario: StateFlow<String?> = mensaje.asStateFlow()

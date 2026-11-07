@@ -28,6 +28,8 @@ data class VehiculoEntity(
     val fotoUri: String? = null,
     val ciudadPicoPlaca: String? = null,
     val picoYPlaca: String? = null,
+    val ciudadMatricula: String? = null,
+    val secretariaTransito: String? = null,
     val esPrincipal: Boolean = false,
     val archivado: Boolean = false,
     val creadoEn: Long = System.currentTimeMillis()

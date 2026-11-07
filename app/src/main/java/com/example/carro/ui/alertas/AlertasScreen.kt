@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AttachFile
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
@@ -140,8 +141,17 @@ private fun DocumentosTab(
                         EstadoChip(item.estado)
                     }
                     Text("Vence: ${item.documento.fechaVencimiento}", style = MaterialTheme.typography.bodySmall)
+                    item.documento.fechaExpedicion?.let {
+                        Text("Expedido: $it", style = MaterialTheme.typography.bodySmall)
+                    }
                     Text(textoDias(item), style = MaterialTheme.typography.bodySmall)
+                    val context = androidx.compose.ui.platform.LocalContext.current
                     Row(Modifier.fillMaxWidth(), Arrangement.End) {
+                        item.documento.adjuntoUri?.let { uri ->
+                            IconButton(onClick = { abrirAdjunto(context, uri) }) {
+                                Icon(Icons.Filled.AttachFile, contentDescription = "Ver adjunto")
+                            }
+                        }
                         IconButton(onClick = { onEditar(item.documento.id) }) {
                             Icon(Icons.Default.Edit, contentDescription = "Editar")
                         }

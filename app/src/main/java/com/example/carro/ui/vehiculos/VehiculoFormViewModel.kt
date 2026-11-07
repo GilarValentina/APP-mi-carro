@@ -9,6 +9,7 @@ import com.example.carro.data.repository.ResultadoGuardarVehiculo
 import com.example.carro.data.repository.VehiculoRepository
 import com.example.carro.domain.model.TipoVehiculo
 import com.example.carro.domain.vehiculo.CampoVehiculo
+import com.example.carro.domain.vehiculo.CatalogoFormulario
 import com.example.carro.domain.vehiculo.Vehiculo
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -29,7 +30,9 @@ data class FormularioVehiculo(
     val cilindraje: String = "",
     val vin: String = "",
     val ciudadPicoPlaca: String = "",
-    val picoYPlaca: String = ""
+    val picoYPlaca: String = "",
+    val ciudadMatricula: String = "",
+    val secretariaTransito: String = ""
 )
 
 /** Estado de UI del formulario de registro/edición (RF-01, RF-02, RF-05). */
@@ -44,11 +47,21 @@ data class VehiculoFormUiState(
 
 class VehiculoFormViewModel(
     private val repository: VehiculoRepository,
-    private val vehiculoId: Long?
+    private val vehiculoId: Long?,
+    ciudadPredeterminada: String = ""
 ) : ViewModel() {
 
+    // Un vehículo nuevo arranca con la ciudad del perfil para matrícula y pico y placa.
     private val estado = MutableStateFlow(
-        VehiculoFormUiState(editando = vehiculoId != null, cargando = vehiculoId != null)
+        VehiculoFormUiState(
+            formulario = FormularioVehiculo(
+                ciudadMatricula = ciudadPredeterminada,
+                secretariaTransito = CatalogoFormulario.secretarias(ciudadPredeterminada).firstOrNull().orEmpty(),
+                ciudadPicoPlaca = ciudadPredeterminada
+            ),
+            editando = vehiculoId != null,
+            cargando = vehiculoId != null
+        )
     )
     val uiState: StateFlow<VehiculoFormUiState> = estado.asStateFlow()
 
@@ -75,7 +88,9 @@ class VehiculoFormViewModel(
                                 cilindraje = veh.cilindraje.orEmpty(),
                                 vin = veh.vin.orEmpty(),
                                 ciudadPicoPlaca = veh.ciudadPicoPlaca.orEmpty(),
-                                picoYPlaca = veh.picoYPlaca.orEmpty()
+                                picoYPlaca = veh.picoYPlaca.orEmpty(),
+                                ciudadMatricula = veh.ciudadMatricula.orEmpty(),
+                                secretariaTransito = veh.secretariaTransito.orEmpty()
                             )
                         } ?: it.formulario
                     )
@@ -112,7 +127,9 @@ class VehiculoFormViewModel(
             combustible = f.combustible,
             cilindraje = f.cilindraje,
             ciudadPicoPlaca = f.ciudadPicoPlaca.ifBlank { null },
-            picoYPlaca = f.picoYPlaca.ifBlank { null }
+            picoYPlaca = f.picoYPlaca.ifBlank { null },
+            ciudadMatricula = f.ciudadMatricula.ifBlank { null },
+            secretariaTransito = f.secretariaTransito.ifBlank { null }
         )
         estado.update { it.copy(guardando = true) }
         viewModelScope.launch {
@@ -130,7 +147,11 @@ class VehiculoFormViewModel(
             object : ViewModelProvider.Factory {
                 @Suppress("UNCHECKED_CAST")
                 override fun <T : ViewModel> create(modelClass: Class<T>, extras: CreationExtras): T =
-                    VehiculoFormViewModel(container.vehiculoRepository, vehiculoId) as T
+                    VehiculoFormViewModel(
+                        container.vehiculoRepository,
+                        vehiculoId,
+                        container.perfilRepository.perfil.value.ciudad.takeIf { it != "Otra" }.orEmpty()
+                    ) as T
             }
     }
 }

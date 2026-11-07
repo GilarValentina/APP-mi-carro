@@ -48,6 +48,17 @@ interface VehiculoDao {
     @Query("UPDATE vehiculos SET esPrincipal = 1 WHERE id = :id")
     suspend fun marcarPrincipal(id: Long)
 
+    @Query("SELECT * FROM vehiculos WHERE archivado = 1 ORDER BY marca ASC")
+    fun observarArchivados(): Flow<List<VehiculoEntity>>
+
+    /** Archiva o restaura un vehículo; un vehículo archivado deja de ser principal. */
+    @Query("UPDATE vehiculos SET archivado = :archivado, esPrincipal = CASE WHEN :archivado THEN 0 ELSE esPrincipal END WHERE id = :id")
+    suspend fun cambiarArchivado(id: Long, archivado: Boolean)
+
+    /** RF-06: el odómetro del vehículo refleja siempre la lectura más alta registrada. */
+    @Query("UPDATE vehiculos SET kilometrajeActual = :km WHERE id = :id")
+    suspend fun actualizarKilometraje(id: Long, km: Long)
+
     @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun insertar(vehiculo: VehiculoEntity): Long
 

@@ -113,6 +113,32 @@ class VehiculoRepository(
         }
     }
 
+    fun observarArchivados(): Flow<List<Vehiculo>> =
+        vehiculoDao.observarArchivados().map { lista -> lista.map { it.toDomain() } }
+
+    /**
+     * Archiva un vehículo sin borrar su historial. Si era el principal,
+     * otro vehículo activo pasa a serlo para que el panel siempre tenga uno.
+     */
+    suspend fun archivar(id: Long) {
+        database.withTransaction {
+            val entity = vehiculoDao.obtenerPorId(id) ?: return@withTransaction
+            vehiculoDao.cambiarArchivado(id, true)
+            if (entity.esPrincipal) {
+                vehiculoDao.obtenerPrincipal()?.let { vehiculoDao.marcarPrincipal(it.id) }
+            }
+        }
+    }
+
+    /** Restaura un vehículo archivado; si no hay ningún activo, queda como principal. */
+    suspend fun restaurar(id: Long) {
+        database.withTransaction {
+            val sinActivos = vehiculoDao.contarActivos() == 0
+            vehiculoDao.cambiarArchivado(id, false)
+            if (sinActivos) vehiculoDao.marcarPrincipal(id)
+        }
+    }
+
     /**
      * RF-03: elimina el vehículo y, en cascada, todo su historial.
      * Si era el principal, el siguiente vehículo más antiguo pasa a serlo.
@@ -142,7 +168,10 @@ private fun VehiculoEntity.toDomain(): Vehiculo = Vehiculo(
     cilindraje = cilindraje,
     ciudadPicoPlaca = ciudadPicoPlaca,
     picoYPlaca = picoYPlaca,
-    esPrincipal = esPrincipal
+    ciudadMatricula = ciudadMatricula,
+    secretariaTransito = secretariaTransito,
+    esPrincipal = esPrincipal,
+    archivado = archivado
 )
 
 // La columna `modelo` guarda el año como texto (convención colombiana: modelo = año).
@@ -161,5 +190,7 @@ private fun Vehiculo.toEntity(): VehiculoEntity = VehiculoEntity(
     cilindraje = cilindraje?.trim()?.ifBlank { null },
     ciudadPicoPlaca = ciudadPicoPlaca?.trim()?.ifBlank { null },
     picoYPlaca = picoYPlaca?.trim()?.ifBlank { null },
+    ciudadMatricula = ciudadMatricula?.trim()?.ifBlank { null },
+    secretariaTransito = secretariaTransito?.trim()?.ifBlank { null },
     esPrincipal = esPrincipal
 )

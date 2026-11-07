@@ -16,18 +16,26 @@ import androidx.compose.ui.unit.dp
 private val LightColorScheme = lightColorScheme(
     primary = NavyPrimary,
     onPrimary = White,
-    primaryContainer = NavyPrimary.copy(alpha = 0.12f),
+    // Contenedores opacos: con transparencia, los FAB y chips se veían grises sobre las tarjetas.
+    primaryContainer = Color(0xFFDCE5EE),
     onPrimaryContainer = NavyPrimary,
     secondary = Petroleum,
     onSecondary = White,
-    secondaryContainer = Petroleum.copy(alpha = 0.12f),
-    onSecondaryContainer = Petroleum,
+    secondaryContainer = Color(0xFFD9ECE8),
+    onSecondaryContainer = SuccessDeep,
     tertiary = SkyBlue,
     onTertiary = NavyPrimary,
-    tertiaryContainer = SkyBlue.copy(alpha = 0.12f),
+    tertiaryContainer = Color(0xFFE1EEF5),
     onTertiaryContainer = NavyPrimary,
     background = BackgroundSoft,
     onBackground = NavyPrimary,
+    // Sin estos, menús, diálogos y selectores usan el lavanda por defecto de Material 3.
+    surfaceContainerLowest = White,
+    surfaceContainerLow = Color(0xFFF9FAFC),
+    surfaceContainer = White,
+    surfaceContainerHigh = White,
+    surfaceContainerHighest = Color(0xFFEDF1F5),
+    surfaceTint = NavyPrimary,
     surface = White,
     onSurface = NavyPrimary,
     surfaceVariant = Color(0xFFE8EEF2),
@@ -78,7 +86,8 @@ private val AppShapes = Shapes(
 @Composable
 fun CarroTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    dynamicColor: Boolean = true,
+    // Desactivado: la app usa siempre la paleta institucional en lugar del color del fondo de pantalla (Android 12+).
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {
