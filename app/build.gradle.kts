@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
@@ -13,6 +15,13 @@ fun gitBranchName(): String {
         "unknown"
     }
 }
+
+// URL y token del Apps Script que envía el correo de bienvenida. Se leen de
+// local.properties (no versionado); si faltan, la app simplemente no envía el correo.
+val propiedadesLocales = Properties().apply {
+    rootProject.file("local.properties").takeIf { it.exists() }?.inputStream()?.use { load(it) }
+}
+fun propiedadLocal(clave: String): String = propiedadesLocales.getProperty(clave, "").trim()
 
 android {
     namespace = "com.example.carro"
@@ -34,6 +43,8 @@ android {
         buildConfigField("String", "PROJECT_DIR_NAME", "\"${rootDir.name}\"")
         buildConfigField("String", "APP_GIT_BRANCH", "\"${gitBranchName()}\"")
         buildConfigField("String", "APP_PRESENTATION_TAG", "\"VERSIÓN PRESENTACIÓN\"")
+        buildConfigField("String", "CORREO_URL", "\"${propiedadLocal("CORREO_URL")}\"")
+        buildConfigField("String", "CORREO_TOKEN", "\"${propiedadLocal("CORREO_TOKEN")}\"")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

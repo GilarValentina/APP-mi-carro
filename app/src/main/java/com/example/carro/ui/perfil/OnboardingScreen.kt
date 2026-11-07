@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -31,6 +32,7 @@ import androidx.compose.material.icons.filled.NotificationsActive
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -42,12 +44,16 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.example.carro.core.correo.CorreoBienvenida
 import com.example.carro.data.repository.PerfilRepository
 import com.example.carro.data.repository.ResultadoRespaldo
 import com.example.carro.domain.perfil.CampoPerfil
@@ -68,6 +74,8 @@ fun OnboardingScreen(
     onTerminado: () -> Unit
 ) {
     val scope = rememberCoroutineScope()
+    val context = LocalContext.current
+    var aceptaCorreo by rememberSaveable { mutableStateOf(true) }
     var preparando by remember { mutableStateOf(false) }
     var errorLimpieza by remember { mutableStateOf<String?>(null) }
     var paso by remember { mutableStateOf(PasoOnboarding.DATOS) }
@@ -99,7 +107,7 @@ fun OnboardingScreen(
                     PasoOnboarding.DATOS -> {
                         Encabezado(
                             titulo = "Te damos la bienvenida a MiCarro",
-                            subtitulo = "Cuéntanos un poco de ti para personalizar tu experiencia. Tus datos se guardan solo en este teléfono."
+                            subtitulo = "Cuéntanos un poco de ti para personalizar tu experiencia. Tus registros se guardan solo en este teléfono."
                         ) { Icon(Icons.Filled.DirectionsCar, null, tint = MaterialTheme.colorScheme.onPrimary) }
                         Card(
                             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
@@ -110,6 +118,25 @@ fun OnboardingScreen(
                                     perfil = nuevo
                                     errores = errores - campo
                                 }
+                            }
+                        }
+                        if (CorreoBienvenida.configurado) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .toggleable(
+                                        value = aceptaCorreo,
+                                        role = Role.Checkbox,
+                                        onValueChange = { aceptaCorreo = it }
+                                    )
+                            ) {
+                                Checkbox(checked = aceptaCorreo, onCheckedChange = null)
+                                Spacer(Modifier.size(8.dp))
+                                Text(
+                                    "Autorizo usar mi nombre y correo para enviarme un mensaje de bienvenida.",
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
                             }
                         }
                         Button(
@@ -191,6 +218,7 @@ fun OnboardingScreen(
                                     // Un usuario nuevo empieza sin vehículos ni registros de instalaciones anteriores.
                                     when (val resultado = limpiarDatosPrevios()) {
                                         is ResultadoRespaldo.Exito -> {
+                                            if (aceptaCorreo) CorreoBienvenida.programar(context, perfilRepository.perfil.value)
                                             perfilRepository.completarOnboarding()
                                             onTerminado()
                                         }
